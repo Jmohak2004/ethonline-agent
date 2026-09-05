@@ -29,11 +29,19 @@ class Settings(BaseSettings):
     # ── Redis ─────────────────────────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # ── WhatsApp ─────────────────────────────────────────────────────────────
+    # ── WhatsApp Provider Configuration (Twilio or Meta) ─────────────────────
+    WHATSAPP_PROVIDER: str = "twilio"  # "twilio" (recommended for sandbox/hackathons), "meta", or "mock"
+    
+    # Meta WhatsApp Cloud API
     WHATSAPP_ACCESS_TOKEN: str = ""
     WHATSAPP_PHONE_NUMBER_ID: str = ""
     WHATSAPP_VERIFY_TOKEN: str = "agentfi_webhook_verify_token"
     WHATSAPP_API_VERSION: str = "v18.0"
+
+    # Twilio WhatsApp
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_WHATSAPP_NUMBER: str = "+14155238886"  # Default Twilio WhatsApp Sandbox number
 
     # ── Privy ─────────────────────────────────────────────────────────────────
     PRIVY_APP_ID: str = ""
