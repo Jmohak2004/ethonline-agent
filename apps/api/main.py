@@ -1,0 +1,54 @@
+"""
+AgentFi API — Main Application Entry Point
+"""
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import structlog
+
+from config import settings
+from database import init_db, close_db
+from routers import auth, agents, health
+from routers.stubs import (
+    users, marketplace, subscriptions, portfolio, signals, trades, permissions
+)
+
+logger = structlog.get_logger()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("AgentFi API starting up", env=settings.APP_ENV, trading_mode=settings.TRADING_MODE)
+    await init_db()
+    yield
+    await close_db()
+    logger.info("AgentFi API shut down")
+
+
+app = FastAPI(
+    title="AgentFi API",
+    description="Your AI agent economy, directly in WhatsApp.",
+    version="1.0.0",
+    docs_url="/docs" if settings.APP_ENV == "development" else None,
+    redoc_url="/redoc" if settings.APP_ENV == "development" else None,
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(health.router, prefix="/health", tags=["health"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(users, prefix="/users", tags=["users"])
+app.include_router(agents.router, prefix="/agents", tags=["agents"])
+app.include_router(marketplace, prefix="/marketplace", tags=["marketplace"])
+app.include_router(subscriptions, prefix="/subscriptions", tags=["subscriptions"])
+app.include_router(portfolio, prefix="/portfolio", tags=["portfolio"])
+app.include_router(signals, prefix="/signals", tags=["signals"])
+app.include_router(trades, prefix="/trades", tags=["trades"])
+app.include_router(permissions, prefix="/permissions", tags=["permissions"])

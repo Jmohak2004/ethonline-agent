@@ -1,0 +1,3060 @@
+# AGENTFI — COMPLETE END-TO-END PROJECT BUILD SPECIFICATION
+
+## 0. ROLE
+
+You are a senior staff-level full-stack engineer, AI-agent architect, Web3 engineer, security engineer, DevOps engineer, and product designer.
+
+Your task is to build a production-quality hackathon MVP called:
+
+# AGENTFI
+
+### Tagline
+
+**"Your AI agent economy, directly in WhatsApp."**
+
+AgentFi is a WhatsApp-native AI-agent marketplace where users can:
+
+1. Create an account without installing MetaMask.
+2. Receive an embedded wallet automatically.
+3. Discover AI agents.
+4. Purchase or subscribe to individual agents.
+5. Purchase pre-built agent packs.
+6. Compose multiple agents into a strategy.
+7. Give agents limited and revocable permissions.
+8. Ask agents to research financial markets.
+9. Receive market opportunities through WhatsApp.
+10. Let agents collaborate with one another.
+11. Allow agents to discover and pay other specialized agents/services.
+12. Execute simulated/testnet trades through Uniswap.
+13. Track portfolio performance.
+14. Rate and review agents.
+15. View agent reputation and performance.
+16. Pay developers using stablecoins.
+17. Use onchain identity and reputation infrastructure.
+
+The product must feel like:
+
+> **WhatsApp + App Store + AI Agents + Web3 Wallet + Agent Economy**
+
+The user should NOT need to understand Web3.
+
+---
+
+# 1. PRIMARY PRODUCT VISION
+
+The fundamental principle is:
+
+> **Web3 should be infrastructure, not user experience.**
+
+The user should not have to:
+
+* Install MetaMask.
+* Understand seed phrases.
+* Understand gas.
+* Copy wallet addresses.
+* Switch networks manually.
+* Understand smart contracts.
+* Understand blockchain terminology.
+
+The user should be able to simply use WhatsApp.
+
+Example:
+
+USER:
+
+"I have $100. I want medium-risk crypto opportunities."
+
+AgentFi:
+
+"Got it. Your profile is:
+
+Budget: $100
+Risk: Medium
+Maximum trade: $20
+Daily loss limit: $10
+
+I found an agent pack that matches your preferences.
+
+Balanced Alpha Pack
+
+* NewsScout
+* MarketMind
+* WhaleWatcher
+* RiskGuardian
+
+$5/month
+
+Activate?"
+
+USER:
+
+"Yes."
+
+AgentFi:
+
+"Activated."
+
+The rest happens in the background.
+
+---
+
+# 2. CORE PRODUCT MODULES
+
+Build the system as these major modules:
+
+## Module A — WhatsApp Interface
+
+Purpose:
+
+Primary user interface.
+
+The user interacts with AgentFi entirely through WhatsApp.
+
+Support:
+
+* Registration
+* OTP/authentication
+* Wallet creation
+* Balance
+* Agent discovery
+* Agent purchase
+* Agent subscription
+* Agent packs
+* Risk profile
+* Market research
+* Trade recommendations
+* Portfolio
+* Agent management
+* Ratings
+* Notifications
+* Approval requests
+
+---
+
+# 3. WHATSAPP COMMAND SYSTEM
+
+Support natural language and structured commands.
+
+Examples:
+
+### Account
+
+"Create my account."
+
+"What's my balance?"
+
+"Show my wallet."
+
+### Risk
+
+"I am low risk."
+
+"Set my maximum trade to $20."
+
+"Never risk more than 5% of my portfolio."
+
+"Allow automatic trades up to $10."
+
+### Marketplace
+
+"Show me trading agents."
+
+"Find me an agent that tracks whales."
+
+"Show agents under $5/month."
+
+"What's the best rated agent?"
+
+"Buy WhaleWatcher."
+
+"Cancel my subscription."
+
+### Trading
+
+"Analyze ETH."
+
+"Find opportunities under $20."
+
+"Why is BTC moving?"
+
+"Show today's signals."
+
+"Execute this trade."
+
+"Don't execute anything without asking me."
+
+### Portfolio
+
+"Show my portfolio."
+
+"How much did I make this week?"
+
+"Show my drawdown."
+
+"Which agent made this recommendation?"
+
+### Agent management
+
+"What agents am I using?"
+
+"Disable WhaleWatcher."
+
+"Allow my trading agent to trade for 24 hours."
+
+---
+
+# 4. SYSTEM ARCHITECTURE
+
+Use a modular architecture.
+
+Recommended:
+
+Frontend:
+
+* Next.js
+* TypeScript
+* Tailwind CSS
+* shadcn/ui
+
+Backend:
+
+* Python
+* FastAPI
+
+AI:
+
+* LLM-based orchestrator
+* Multi-agent architecture
+* MCP-compatible tools
+
+Database:
+
+* PostgreSQL
+
+Caching:
+
+* Redis
+
+Messaging:
+
+* WhatsApp Cloud API
+
+Blockchain:
+
+* EVM-compatible testnet
+* Privy embedded wallets
+* Account abstraction
+* Smart accounts
+
+Onchain data:
+
+* The Graph
+
+Payments:
+
+* Hedera x402
+* Arc / USDC
+
+Identity:
+
+* ENS
+
+Security:
+
+* Ledger Agent Stack
+* Ledger Key Ring CLI
+
+Private execution/risk:
+
+* Chainlink CRE Confidential Workflows
+
+DEX:
+
+* Uniswap
+
+Agent service marketplace:
+
+* Bazantic-compatible MCP/x402 services
+
+---
+
+# 5. HIGH-LEVEL ARCHITECTURE
+
+Implement:
+
+```
+                     USER
+                       |
+                       v
+                WHATSAPP CLOUD API
+                       |
+                       v
+                WEBHOOK SERVICE
+                       |
+                       v
+                AUTH / USER SERVICE
+                       |
+                       v
+              AI ORCHESTRATOR AGENT
+                       |
+      +----------------+----------------+
+      |                |                |
+      v                v                v
+```
+
+MARKETPLACE       PORTFOLIO         RISK PROFILE
+SERVICE          SERVICE            SERVICE
+|
+v
+AGENT REGISTRY
+|
++------+------+------+------+
+|      |      |      |      |
+v      v      v      v      v
+News   Market Whale  Risk  Sentiment
+Agent  Agent  Agent  Agent Agent
+|      |      |      |      |
++------+------+------+------+
+|
+v
+SIGNAL ENGINE
+|
+v
+CONFIDENTIAL RISK
+EVALUATION
+|
+v
+PERMISSION ENGINE
+|
++----+----+
+|         |
+v         v
+AUTO APPROVE  HUMAN APPROVAL
+|         |
+|         v
+|      LEDGER
+|         |
++----+----+
+|
+v
+PRIVY SMART ACCOUNT
+|
+v
+UNISWAP
+|
+v
+TESTNET
+
+Parallel:
+
+AGENT
+|
+v
+AGENT DISCOVERY
+|
+v
+HEDERA x402
+|
+v
+OTHER AGENT/API
+
+And:
+
+USER
+|
+v
+USDC
+|
+v
+ARC
+|
+v
+AGENT DEVELOPER
+
+And:
+
+AGENT
+|
+v
+ENS IDENTITY
+
+And:
+
+BLOCKCHAIN
+|
+v
+THE GRAPH
+|
+v
+ONCHAIN INTELLIGENCE
+
+---
+
+# 6. MICROSERVICES / BACKEND MODULES
+
+Create these logical backend services.
+
+## 6.1 auth-service
+
+Responsibilities:
+
+* User creation
+* WhatsApp number mapping
+* OTP verification
+* Session management
+* JWT/session tokens
+* Role management
+
+Roles:
+
+* USER
+* AGENT_DEVELOPER
+* ADMIN
+
+---
+
+# 7. USER SERVICE
+
+Store:
+
+* id
+* whatsapp_number
+* display_name
+* created_at
+* wallet_id
+* wallet_address
+* risk_profile_id
+* status
+
+Never store:
+
+* private keys
+* seed phrases
+* raw secret credentials
+
+---
+
+# 8. WALLET SERVICE
+
+Use Privy.
+
+Responsibilities:
+
+* Create embedded wallet
+* Retrieve wallet
+* Display wallet balance
+* Initiate transaction
+* Handle transaction status
+* Support smart account abstraction where applicable
+
+The wallet must be invisible to normal users.
+
+User sees:
+
+"Your AgentFi balance: $87.40"
+
+Not:
+
+"0x82A..."
+
+unless they explicitly request technical wallet information.
+
+---
+
+# 9. RISK PROFILE SERVICE
+
+Create:
+
+RiskProfile:
+
+```text
+risk_level
+maximum_portfolio_exposure
+maximum_trade_amount
+daily_loss_limit
+maximum_number_of_open_positions
+automatic_execution_enabled
+human_approval_threshold
+stop_loss_percentage
+take_profit_percentage
+allowed_assets
+blocked_assets
+permission_expiry
+```
+
+Example:
+
+```json
+{
+  "risk_level": "MEDIUM",
+  "maximum_trade_amount": 20,
+  "daily_loss_limit": 10,
+  "maximum_portfolio_exposure": 25,
+  "automatic_execution_enabled": true,
+  "human_approval_threshold": 25,
+  "stop_loss_percentage": 5,
+  "permission_expiry_hours": 24
+}
+```
+
+---
+
+# 10. AGENT MARKETPLACE
+
+Create a complete marketplace.
+
+Agent entity:
+
+```text
+Agent
+-----
+id
+name
+slug
+ens_name
+developer_id
+description
+category
+version
+price
+pricing_model
+risk_level
+rating
+rating_count
+active_users
+performance_score
+reliability_score
+maximum_drawdown
+status
+created_at
+updated_at
+```
+
+Categories:
+
+* TRADING
+* NEWS
+* RESEARCH
+* SENTIMENT
+* ONCHAIN
+* RISK
+* AUTOMATION
+* MARKETING
+* PRODUCTIVITY
+* CODING
+
+Pricing:
+
+* FREE
+* ONE_TIME
+* SUBSCRIPTION
+* PAY_PER_USE
+
+---
+
+# 11. INITIAL AGENTS
+
+Build at least these six agents.
+
+## Agent 1 — NewsScout
+
+Purpose:
+
+Monitor and summarize relevant market news.
+
+Inputs:
+
+* News feeds
+* Protocol announcements
+* Market events
+
+Output:
+
+```json
+{
+  "asset": "ETH",
+  "signal": "POSITIVE",
+  "confidence": 0.74,
+  "reasoning": [
+    "Increased ecosystem activity",
+    "Positive announcement"
+  ]
+}
+```
+
+---
+
+# 12. Agent 2 — MarketMind
+
+Analyze:
+
+* Price
+* Volume
+* Momentum
+* Volatility
+* Trend
+* Technical indicators
+
+Do NOT claim guaranteed prediction.
+
+Output:
+
+```json
+{
+  "asset": "ETH",
+  "trend": "BULLISH",
+  "confidence": 0.71,
+  "volatility": "MEDIUM"
+}
+```
+
+---
+
+# 13. Agent 3 — WhaleWatcher
+
+Use The Graph.
+
+Monitor:
+
+* Whale transfers
+* Exchange flows
+* DEX activity
+* Liquidity
+* Large wallet movements
+
+Output:
+
+```json
+{
+  "asset": "ETH",
+  "whale_activity": "ACCUMULATION",
+  "confidence": 0.81
+}
+```
+
+Every result should contain explainable evidence.
+
+---
+
+# 14. Agent 4 — SentimentAgent
+
+Analyze:
+
+* News sentiment
+* Social signals
+* Market narrative
+
+Output:
+
+```text
+Sentiment: POSITIVE
+Confidence: 78%
+```
+
+Avoid treating social sentiment as fact.
+
+---
+
+# 15. Agent 5 — RiskGuardian
+
+This is mandatory.
+
+Responsibilities:
+
+* Validate proposed trade
+* Check position size
+* Check exposure
+* Check daily loss
+* Check drawdown
+* Check asset restrictions
+* Check user permissions
+
+Input:
+
+```json
+{
+  "asset": "ETH",
+  "amount": 20,
+  "portfolio_value": 100,
+  "risk_profile": {}
+}
+```
+
+Output:
+
+```json
+{
+  "decision": "APPROVED",
+  "risk_score": 42,
+  "reason": "Within user-defined limits"
+}
+```
+
+Possible decisions:
+
+* APPROVED
+* REJECTED
+* HUMAN_APPROVAL_REQUIRED
+
+---
+
+# 16. Agent 6 — ExecutionAgent
+
+Responsibilities:
+
+* Receive approved trade
+* Verify permission
+* Verify limits
+* Prepare transaction
+* Execute through Uniswap
+* Track transaction
+* Return status
+
+Never allow ExecutionAgent to bypass RiskGuardian.
+
+Architecture:
+
+```text
+Orchestrator
+    |
+    v
+RiskGuardian
+    |
+    v
+PermissionEngine
+    |
+    v
+ExecutionAgent
+```
+
+---
+
+# 17. MULTI-AGENT DECISION ENGINE
+
+Do not let one LLM decide everything.
+
+Implement:
+
+```text
+NewsScout
+    |
+MarketMind
+    |
+WhaleWatcher
+    |
+SentimentAgent
+    |
+    v
+Signal Aggregator
+    |
+    v
+RiskGuardian
+    |
+    v
+Decision
+```
+
+Create a weighted score:
+
+```text
+Signal Score =
+    25% Market
+  + 25% Onchain
+  + 20% News
+  + 15% Sentiment
+  + 15% Risk
+```
+
+Make weights configurable.
+
+The system must never claim:
+
+"Guaranteed profit."
+
+Use:
+
+"Potential opportunity."
+
+---
+
+# 18. THE GRAPH INTEGRATION
+
+The Graph must be a meaningful part of the system.
+
+Implement:
+
+* Subgraph querying
+* Graph MCP where applicable
+* Standardized blockchain data
+* Onchain activity retrieval
+
+Create a service:
+
+`graph-intelligence-service`
+
+Example tool:
+
+```text
+get_token_activity(token)
+get_whale_activity(token)
+get_liquidity(token)
+get_dex_volume(token)
+get_exchange_flow(token)
+```
+
+Expose these as tools to AI agents.
+
+---
+
+# 19. HEDERA INTEGRATION
+
+Use Hedera for agent-to-agent payments.
+
+Implement a real x402-style flow.
+
+Example:
+
+```text
+TradingAgent
+    |
+"I need whale analysis"
+    |
+Agent Marketplace
+    |
+WhaleWatcher
+    |
+$0.02 service fee
+    |
+Hedera x402
+    |
+Payment
+    |
+WhaleWatcher
+    |
+Analysis
+```
+
+The demo must show:
+
+1. Agent discovers service.
+2. Service requires payment.
+3. Agent pays.
+4. Service executes.
+5. Agent receives result.
+
+Use Hedera Agent Kit where appropriate.
+
+Use HCS for relevant agent/reputation/payment metadata where appropriate.
+
+---
+
+# 20. ARC + USDC
+
+Use Arc/USDC as the stablecoin settlement layer.
+
+Implement:
+
+```text
+User
+  |
+  v
+Agent Subscription
+  |
+  v
+USDC Payment
+  |
+  v
+Arc
+  |
+  +--> Platform fee
+  |
+  +--> Developer
+```
+
+Support:
+
+* Agent subscriptions
+* Agent purchases
+* Pay-per-use
+* Developer payouts
+
+For the hackathon MVP, use testnet funds.
+
+---
+
+# 21. PRIVY
+
+Privy is responsible for the walletless UX.
+
+Implement:
+
+```text
+WhatsApp identity
+      |
+      v
+AgentFi account
+      |
+      v
+Privy embedded wallet
+      |
+      v
+Smart account
+```
+
+Do not force users to install MetaMask.
+
+User should be able to start with:
+
+"Create my account."
+
+---
+
+# 22. ACCOUNT ABSTRACTION
+
+Use smart accounts where possible.
+
+Create policy-based permissions.
+
+Example:
+
+```text
+Agent:
+TradingAgent
+
+Permission:
+Trade tokens
+
+Maximum transaction:
+$10
+
+Daily limit:
+$50
+
+Expiration:
+24 hours
+
+Withdrawal:
+DISABLED
+```
+
+The agent should never possess unrestricted user funds.
+
+---
+
+# 23. SESSION KEYS / DELEGATED PERMISSIONS
+
+Implement a permission object:
+
+```json
+{
+  "agent_id": "agent_123",
+  "user_id": "user_123",
+  "max_transaction": 10,
+  "daily_limit": 50,
+  "allowed_actions": [
+    "SWAP"
+  ],
+  "blocked_actions": [
+    "WITHDRAW"
+  ],
+  "expires_at": "..."
+}
+```
+
+Before every financial action:
+
+```text
+Validate permission
+      |
+      +-- expired? -> REJECT
+      |
+      +-- amount too high? -> REJECT
+      |
+      +-- withdrawal? -> REJECT
+      |
+      +-- within limits? -> CONTINUE
+```
+
+---
+
+# 24. LEDGER INTEGRATION
+
+Use Ledger Agent Stack and Key Ring CLI where required by the current sponsor specification.
+
+Ledger must protect sensitive signing operations.
+
+Implement two modes.
+
+## Low-risk mode
+
+Automatically execute within configured limits.
+
+## High-risk mode
+
+Require human approval.
+
+Example:
+
+```text
+Trade requested: $100
+User threshold: $25
+
+=> HUMAN APPROVAL REQUIRED
+```
+
+Send WhatsApp:
+
+"🚨 A high-risk action requires approval."
+
+Then require secure Ledger approval in the appropriate flow.
+
+Never expose private keys to the LLM.
+
+---
+
+# 25. CHAINLINK CRE
+
+Implement a confidential risk-evaluation workflow.
+
+Sensitive inputs:
+
+* User risk threshold
+* Portfolio exposure
+* Proprietary strategy parameters
+
+The workflow should return:
+
+```text
+APPROVED
+```
+
+or
+
+```text
+REJECTED
+```
+
+without unnecessarily exposing sensitive strategy information.
+
+Use a confidential TEE handler according to the current Chainlink CRE requirements.
+
+---
+
+# 26. ENS AGENT IDENTITY
+
+Every published agent should have an identity.
+
+Example:
+
+```text
+whalewatcher.agentfi.eth
+newsscout.agentfi.eth
+riskguardian.agentfi.eth
+marketmind.agentfi.eth
+```
+
+Store metadata:
+
+```text
+Agent Name
+Description
+Developer
+Version
+Capabilities
+Pricing
+Reputation
+```
+
+Use ENS as the identity/discovery layer where appropriate.
+
+---
+
+# 27. AGENT REPUTATION SYSTEM
+
+Create a reputation system.
+
+Metrics:
+
+```text
+User Rating
+Reliability
+Historical Performance
+Risk-adjusted Performance
+Maximum Drawdown
+Number of Users
+Completed Tasks
+Failed Tasks
+Uptime
+```
+
+Do not rank solely by raw return.
+
+Create:
+
+```text
+Agent Reputation Score =
+30% performance
+20% risk-adjusted performance
+20% reliability
+15% user rating
+10% strategy consistency
+5% usage
+```
+
+Make these weights configurable.
+
+---
+
+# 28. AGENT MARKETPLACE UI
+
+Build a polished web dashboard for developers/judges.
+
+Pages:
+
+## Home
+
+Show:
+
+* Total agents
+* Active users
+* Agent transactions
+* Marketplace volume
+* Top agents
+
+## Marketplace
+
+Cards:
+
+```text
+WhaleWatcher
+
+⭐ 4.8
+
+2,340 users
+
+Risk: Medium
+
+$3/month
+
+[View]
+```
+
+## Agent detail
+
+Show:
+
+* Description
+* Developer
+* ENS identity
+* Capabilities
+* Pricing
+* Rating
+* Reviews
+* Historical metrics
+* Risk profile
+* Version history
+
+## Agent Pack
+
+Show:
+
+```text
+Balanced Alpha Pack
+
+NewsScout
+MarketMind
+WhaleWatcher
+RiskGuardian
+
+$5/month
+```
+
+---
+
+# 29. AGENT PACKS
+
+Allow developers to bundle agents.
+
+AgentPack:
+
+```text
+id
+name
+description
+agents
+price
+pricing_model
+developer
+rating
+```
+
+Initial packs:
+
+### Beginner Pack
+
+NewsScout
+MarketMind
+RiskGuardian
+
+### Alpha Pack
+
+NewsScout
+MarketMind
+WhaleWatcher
+SentimentAgent
+RiskGuardian
+
+### Autonomous Research Pack
+
+NewsScout
+WhaleWatcher
+ResearchAgent
+SentimentAgent
+
+---
+
+# 30. AGENT COMPOSITION
+
+Users should be able to combine agents.
+
+Example:
+
+```text
+User:
+
+Use WhaleWatcher + NewsScout + RiskGuardian.
+```
+
+Or:
+
+"Create a strategy using my current agents."
+
+The orchestrator creates a workflow.
+
+---
+
+# 31. BAZANTIC INTEGRATION
+
+Expose specialized services as MCP/x402-compatible services where possible.
+
+Example:
+
+```text
+Whale Analysis Service
+Sentiment Service
+Market Data Service
+Risk Analysis Service
+```
+
+Create a reusable "recipe":
+
+```text
+Market Intelligence Recipe
+
+1. Fetch Graph data
+2. Call WhaleWatcher
+3. Call SentimentAgent
+4. Call MarketMind
+5. Aggregate
+6. Send to RiskGuardian
+```
+
+The agent should be able to discover and consume these services.
+
+---
+
+# 32. UNISWAP
+
+Use Uniswap for testnet swap execution.
+
+Implement:
+
+```text
+Asset selection
+    |
+    v
+Quote
+    |
+    v
+Slippage validation
+    |
+    v
+Risk validation
+    |
+    v
+Permission validation
+    |
+    v
+User/Ledger approval
+    |
+    v
+Swap
+    |
+    v
+Transaction receipt
+```
+
+Do not execute if:
+
+* Slippage exceeds limit
+* User permission expired
+* Amount exceeds limit
+* Asset is blocked
+* RiskGuardian rejects
+
+---
+
+# 33. PORTFOLIO SERVICE
+
+Track:
+
+* Asset
+* Quantity
+* Entry price
+* Current price
+* Unrealized P&L
+* Realized P&L
+* Exposure
+* Drawdown
+
+Provide:
+
+```text
+Total portfolio value
+Today's P&L
+7-day P&L
+Maximum drawdown
+Asset allocation
+Agent-attributed performance
+```
+
+---
+
+# 34. PAPER TRADING MODE
+
+Mandatory for the MVP.
+
+Create:
+
+```text
+TRADING_MODE = PAPER
+```
+
+In paper mode:
+
+* No real funds
+* Simulated execution
+* Realistic slippage
+* Real market data where legally/technically appropriate
+* Full transaction logs
+
+Also support:
+
+```text
+TRADING_MODE = TESTNET
+```
+
+for actual sponsor demonstrations.
+
+Do not enable unrestricted mainnet autonomous trading.
+
+---
+
+# 35. MARKET SIGNAL SYSTEM
+
+Every signal must have:
+
+```text
+signal_id
+agent_id
+asset
+timestamp
+signal_type
+confidence
+risk_level
+evidence
+recommendation
+```
+
+Example:
+
+```json
+{
+  "asset": "ETH",
+  "signal": "POTENTIAL_UPSIDE",
+  "confidence": 0.78,
+  "risk": "MEDIUM",
+  "evidence": [
+    "Onchain accumulation",
+    "Volume increase",
+    "Positive news sentiment"
+  ]
+}
+```
+
+---
+
+# 36. EXPLAINABILITY
+
+Every AI recommendation must answer:
+
+1. What happened?
+2. Why does it matter?
+3. Which agents agree?
+4. What are the risks?
+5. What is the proposed action?
+6. What is the maximum possible exposure?
+7. Why did the RiskGuardian approve/reject?
+
+Never expose hidden chain-of-thought.
+
+Instead provide concise, user-safe explanations.
+
+---
+
+# 37. WHATSAPP NOTIFICATIONS
+
+Send:
+
+### Market Alert
+
+"🚨 New potential opportunity detected."
+
+### Risk Alert
+
+"⚠️ Portfolio exposure is approaching your configured limit."
+
+### Agent Alert
+
+"🤖 WhaleWatcher detected unusual activity."
+
+### Approval
+
+"🔐 Trade requires your approval."
+
+### Execution
+
+"✅ Testnet trade completed."
+
+### Subscription
+
+"💳 Your agent subscription was successfully activated."
+
+---
+
+# 38. AGENT DEVELOPER PORTAL
+
+Developers should be able to:
+
+* Register
+* Verify identity
+* Create agent
+* Upload metadata
+* Define pricing
+* Define capabilities
+* Define required permissions
+* Publish
+* Update versions
+* View users
+* View earnings
+* View ratings
+* View reputation
+
+---
+
+# 39. AGENT MANIFEST
+
+Every agent must have a machine-readable manifest.
+
+Example:
+
+```json
+{
+  "name": "WhaleWatcher",
+  "version": "1.0.0",
+  "description": "Detects significant onchain wallet activity",
+  "capabilities": [
+    "ONCHAIN_ANALYSIS"
+  ],
+  "permissions": [
+    "READ_BLOCKCHAIN_DATA"
+  ],
+  "pricing": {
+    "model": "PAY_PER_USE",
+    "amount": "0.02",
+    "currency": "USDC"
+  },
+  "risk_level": "MEDIUM",
+  "ens_name": "whalewatcher.agentfi.eth"
+}
+```
+
+---
+
+# 40. SECURITY REQUIREMENTS
+
+Never:
+
+* Put private keys in environment variables if avoidable.
+* Give LLM unrestricted wallet access.
+* Allow arbitrary transaction execution.
+* Allow agent withdrawal permissions.
+* Trust LLM output directly.
+* Allow an agent to modify its own permissions.
+* Allow agents to bypass RiskGuardian.
+* Allow user funds to be accessed outside defined policies.
+
+Use:
+
+* Permission engine
+* Transaction simulator
+* Spending limits
+* Allowlisted contracts
+* Allowlisted assets
+* Expiring permissions
+* Human approval
+* Secure key management
+* Audit logs
+
+---
+
+# 41. TRANSACTION POLICY ENGINE
+
+Every transaction must pass:
+
+```text
+1. User authenticated?
+2. Agent authenticated?
+3. Agent permission valid?
+4. Permission expired?
+5. Asset allowed?
+6. Contract allowed?
+7. Amount below limit?
+8. Daily limit available?
+9. Portfolio exposure acceptable?
+10. RiskGuardian approved?
+11. Slippage acceptable?
+12. Human approval required?
+13. Ledger approval required?
+14. Execute
+```
+
+If any required condition fails:
+
+```text
+REJECT
+```
+
+---
+
+# 42. DATABASE SCHEMA
+
+Use PostgreSQL.
+
+Tables:
+
+```text
+users
+wallets
+risk_profiles
+agents
+agent_versions
+agent_capabilities
+agent_packs
+agent_pack_items
+agent_subscriptions
+agent_reviews
+agent_reputation
+agent_transactions
+agent_payments
+agent_service_requests
+agent_service_payments
+market_signals
+portfolio_positions
+portfolio_snapshots
+trade_requests
+trade_executions
+permissions
+session_keys
+approval_requests
+blockchain_transactions
+notifications
+audit_logs
+```
+
+Use foreign keys and indexes.
+
+Important indexes:
+
+```text
+users.whatsapp_number
+agents.slug
+agents.category
+agents.rating
+agent_reviews.agent_id
+agent_transactions.agent_id
+market_signals.asset
+market_signals.timestamp
+trade_executions.user_id
+blockchain_transactions.tx_hash
+```
+
+---
+
+# 43. API DESIGN
+
+Create REST APIs.
+
+## Auth
+
+```text
+POST /auth/request-otp
+POST /auth/verify-otp
+GET /auth/me
+```
+
+## Marketplace
+
+```text
+GET /agents
+GET /agents/:id
+POST /agents
+PATCH /agents/:id
+POST /agents/:id/publish
+```
+
+## Subscriptions
+
+```text
+POST /subscriptions
+GET /subscriptions
+DELETE /subscriptions/:id
+```
+
+## Portfolio
+
+```text
+GET /portfolio
+GET /portfolio/performance
+GET /portfolio/risk
+```
+
+## Signals
+
+```text
+GET /signals
+GET /signals/:id
+```
+
+## Trading
+
+```text
+POST /trades/analyze
+POST /trades/request
+POST /trades/approve
+POST /trades/reject
+GET /trades
+```
+
+## Permissions
+
+```text
+POST /permissions
+GET /permissions
+DELETE /permissions/:id
+```
+
+## Agents
+
+```text
+POST /agents/:id/invoke
+POST /agents/:id/review
+GET /agents/:id/reputation
+```
+
+---
+
+# 44. EVENT-DRIVEN ARCHITECTURE
+
+Use Redis streams or a message broker.
+
+Events:
+
+```text
+USER_CREATED
+WALLET_CREATED
+AGENT_PURCHASED
+AGENT_SUBSCRIBED
+MARKET_SIGNAL_CREATED
+TRADE_REQUESTED
+RISK_CHECK_COMPLETED
+APPROVAL_REQUIRED
+TRADE_APPROVED
+TRADE_EXECUTED
+AGENT_PAYMENT_COMPLETED
+AGENT_REVIEW_CREATED
+```
+
+This makes the architecture scalable.
+
+---
+
+# 45. AI ORCHESTRATOR
+
+The orchestrator should:
+
+1. Understand user intent.
+2. Select appropriate agents.
+3. Discover marketplace services.
+4. Call agents.
+5. Aggregate results.
+6. Ask specialized agents for additional information.
+7. Run risk checks.
+8. Request approval where required.
+9. Execute permitted actions.
+10. Report result to user.
+
+The orchestrator must NEVER directly bypass the permission layer.
+
+---
+
+# 46. TOOL-CALLING MODEL
+
+Give the orchestrator tools such as:
+
+```text
+search_agents()
+get_agent()
+subscribe_agent()
+invoke_agent()
+get_market_data()
+get_onchain_data()
+get_portfolio()
+get_risk_profile()
+create_trade_request()
+check_permission()
+request_human_approval()
+execute_swap()
+get_transaction_status()
+pay_agent()
+get_agent_reputation()
+```
+
+---
+
+# 47. AGENT DISCOVERY
+
+Implement:
+
+```text
+search_agents(
+    category,
+    price,
+    rating,
+    risk,
+    capability
+)
+```
+
+Example:
+
+User:
+
+"Find a medium-risk whale tracking agent under $5."
+
+System:
+
+```text
+search_agents(
+  category="ONCHAIN",
+  max_price=5,
+  risk="MEDIUM"
+)
+```
+
+Rank by:
+
+```text
+reputation
++
+performance
++
+price
++
+reliability
+```
+
+---
+
+# 48. AGENT-TO-AGENT ECONOMY
+
+This is one of the central hackathon features.
+
+Example:
+
+```text
+TradingAgent
+    |
+    | needs sentiment
+    v
+Marketplace
+    |
+    v
+SentimentAgent
+    |
+    | requires $0.02
+    v
+Hedera x402
+    |
+    v
+Payment
+    |
+    v
+SentimentAgent
+    |
+    v
+Result
+```
+
+The user does not manually initiate this payment.
+
+The user's agent does it within the user's spending permissions.
+
+---
+
+# 49. USER EXPERIENCE RULE
+
+Never expose complexity unnecessarily.
+
+Bad:
+
+"Your EVM smart account has insufficient gas."
+
+Good:
+
+"Your account needs a small amount of network credit to complete this action."
+
+Bad:
+
+"Sign transaction 0x812..."
+
+Good:
+
+"🔐 Please approve this high-value action."
+
+---
+
+# 50. OBSERVABILITY
+
+Implement:
+
+* Structured logs
+* Error tracking
+* Agent invocation logs
+* Transaction logs
+* Payment logs
+* Risk decision logs
+* Latency metrics
+
+Every important financial operation gets an audit record.
+
+---
+
+# 51. ADMIN DASHBOARD
+
+Include:
+
+* Users
+* Agents
+* Transactions
+* Payments
+* Failed executions
+* Agent reputation
+* Marketplace activity
+* System health
+* AI invocation metrics
+
+---
+
+# 52. TESTING
+
+Write tests for:
+
+## Unit
+
+* Risk calculations
+* Position sizing
+* Permission checks
+* Reputation calculation
+* Agent ranking
+* Portfolio calculations
+
+## Integration
+
+* WhatsApp webhook
+* Privy wallet
+* The Graph
+* Hedera payment
+* Arc USDC
+* ENS
+* Uniswap
+* Chainlink CRE
+* Ledger
+
+## End-to-end
+
+Test:
+
+```text
+WhatsApp
+→ user creation
+→ wallet
+→ marketplace
+→ agent purchase
+→ agent invocation
+→ data retrieval
+→ risk check
+→ approval
+→ testnet transaction
+→ WhatsApp confirmation
+```
+
+---
+
+# 53. FAILURE HANDLING
+
+If an agent fails:
+
+Do not silently continue.
+
+Example:
+
+"WhaleWatcher is temporarily unavailable. I won't make the trade without the required analysis."
+
+If blockchain transaction fails:
+
+"Transaction failed. No additional action was taken."
+
+If RiskGuardian is unavailable:
+
+```text
+DEFAULT = FAIL CLOSED
+```
+
+Never default to approval.
+
+---
+
+# 54. FRAUD / MANIPULATION PROTECTION
+
+Marketplace reviews must not be trivially manipulated.
+
+Detect:
+
+* Repeated reviews
+* Suspicious review bursts
+* Fake accounts
+* Self-review
+* Abnormal rating patterns
+
+Where possible, associate developer identity with a verifiable identity layer.
+
+World can optionally be used for unique-human verification.
+
+---
+
+# 55. WORLD OPTIONAL INTEGRATION
+
+If time allows:
+
+Use World for:
+
+* Developer verification
+* Unique-human verification
+* Marketplace anti-Sybil protection
+
+Do not make World mandatory for the primary user experience.
+
+---
+
+# 56. DEVELOPMENT PHASES
+
+Implement in this exact order.
+
+## PHASE 1 — Foundation
+
+Build:
+
+* Monorepo
+* Backend
+* PostgreSQL
+* Redis
+* Authentication
+* User model
+* Basic frontend
+
+---
+
+## PHASE 2 — WhatsApp
+
+Implement:
+
+* WhatsApp webhook
+* Message parser
+* User registration
+* Command routing
+* Notification service
+
+---
+
+## PHASE 3 — Privy
+
+Implement:
+
+* Embedded wallet
+* Smart account
+* Wallet balance
+* Testnet funding
+
+---
+
+## PHASE 4 — Marketplace
+
+Implement:
+
+* Agent registry
+* Agent detail
+* Search
+* Ratings
+* Subscriptions
+* Agent packs
+
+---
+
+## PHASE 5 — AI Agents
+
+Implement:
+
+* NewsScout
+* MarketMind
+* WhaleWatcher
+* SentimentAgent
+* RiskGuardian
+* ExecutionAgent
+
+---
+
+## PHASE 6 — The Graph
+
+Implement real onchain data retrieval.
+
+---
+
+## PHASE 7 — Agent Economy
+
+Implement:
+
+* Hedera
+* x402
+* Agent-to-agent payment
+* Service discovery
+
+---
+
+## PHASE 8 — Arc
+
+Implement:
+
+* USDC
+* Agent subscriptions
+* Developer payment
+
+---
+
+## PHASE 9 — ENS
+
+Implement:
+
+* Agent identity
+* Agent metadata
+* ENS names
+
+---
+
+## PHASE 10 — Security
+
+Implement:
+
+* Permission engine
+* Session keys
+* Spending limits
+* Ledger
+* Human approval
+
+---
+
+## PHASE 11 — Chainlink
+
+Implement:
+
+* Confidential risk evaluation
+* CRE workflow
+* TEE handler
+
+---
+
+## PHASE 12 — Uniswap
+
+Implement:
+
+* Quote
+* Swap
+* Testnet execution
+* Transaction tracking
+
+---
+
+## PHASE 13 — Bazantic
+
+Implement:
+
+* MCP services
+* x402 gateway
+* Recipes
+
+---
+
+## PHASE 14 — Polish
+
+Build:
+
+* Marketplace UI
+* Developer dashboard
+* Analytics
+* Leaderboard
+* Agent reputation
+* Demo mode
+
+---
+
+# 57. DEMO MODE
+
+Create a deterministic demo environment.
+
+Demo user:
+
+```text
+Name: Demo User
+Balance: $100 USDC
+Risk: Medium
+Maximum trade: $20
+Daily loss limit: $10
+```
+
+Agents:
+
+```text
+NewsScout
+MarketMind
+WhaleWatcher
+SentimentAgent
+RiskGuardian
+ExecutionAgent
+```
+
+Demo scenario:
+
+```text
+User:
+"Find me a medium-risk opportunity under $20."
+```
+
+System:
+
+```text
+NewsScout:
+Positive signal
+
+MarketMind:
+Bullish trend
+
+WhaleWatcher:
+Accumulation detected
+
+Sentiment:
+Positive
+
+Signal Aggregator:
+78% confidence
+
+RiskGuardian:
+Approved
+
+PermissionEngine:
+Approved
+
+Trade amount:
+$20
+```
+
+Then:
+
+```text
+ExecutionAgent
+→ Uniswap
+→ Testnet swap
+```
+
+And:
+
+```text
+WhatsApp:
+
+✅ Trade executed
+
+Asset: ETH
+Amount: $20
+Risk: Medium
+Confidence: 78%
+```
+
+---
+
+# 58. SECOND DEMO — AGENT MARKETPLACE
+
+User:
+
+"I need a whale-analysis agent."
+
+AgentFi:
+
+"Here are the top three."
+
+```text
+1. WhaleWatcher Pro
+⭐ 4.8
+$3/month
+
+2. ChainWhale
+⭐ 4.6
+$2/month
+
+3. AlphaWhale
+⭐ 4.4
+$0.02/query
+```
+
+User:
+
+"Buy WhaleWatcher Pro."
+
+AgentFi:
+
+"Payment: 3 USDC."
+
+User:
+
+"Confirm."
+
+Payment:
+
+```text
+Privy
+→ Arc
+→ Developer
+```
+
+Agent activated.
+
+---
+
+# 59. THIRD DEMO — AGENT-TO-AGENT PAYMENT
+
+TradingAgent:
+
+"I need specialized whale analysis."
+
+Marketplace:
+
+"WhaleWatcher Pro charges $0.02/query."
+
+TradingAgent:
+
+"Use it."
+
+Payment:
+
+```text
+Hedera x402
+```
+
+WhaleWatcher:
+
+"Analysis completed."
+
+TradingAgent:
+
+"Signal updated."
+
+This should be one of the centerpiece moments of the hackathon demo.
+
+---
+
+# 60. FOURTH DEMO — HIGH-RISK APPROVAL
+
+User:
+
+"Trade $100."
+
+System:
+
+"Your automatic limit is $20."
+
+Then:
+
+"⚠️ This action exceeds your automatic limit."
+
+"Human approval required."
+
+Ledger approval.
+
+Then execution.
+
+---
+
+# 61. FRONTEND DESIGN
+
+Style:
+
+* Premium fintech
+* Minimal
+* Dark/light support
+* Modern Web3 without looking like a crypto casino
+
+Primary colors should be restrained.
+
+Pages:
+
+```text
+/
+ /marketplace
+ /agents
+ /agents/[id]
+ /packs
+ /portfolio
+ /activity
+ /developer
+ /developer/agents
+ /developer/earnings
+ /admin
+```
+
+---
+
+# 62. MARKETPLACE UX
+
+Agent card:
+
+```text
+--------------------------------
+🐋 WhaleWatcher Pro
+
+Onchain Intelligence
+
+⭐ 4.8
+2.4K users
+
+Risk: Medium
+
+Performance:
++12.4%
+
+Max Drawdown:
+-7.1%
+
+$3/month
+
+[Subscribe]
+--------------------------------
+```
+
+Always show risk and drawdown alongside performance.
+
+---
+
+# 63. SECURITY UX
+
+Display:
+
+```text
+Agent permissions
+
+✓ Read blockchain data
+✓ Analyze portfolio
+✓ Trade up to $20
+✓ Daily limit $50
+
+✗ Withdraw funds
+✗ Change permissions
+✗ Transfer wallet ownership
+```
+
+This should be visible to the user.
+
+---
+
+# 64. RESPONSIBLE FINANCIAL DESIGN
+
+The system must explicitly state:
+
+* No guaranteed returns.
+* AI predictions are uncertain.
+* Past performance does not guarantee future results.
+* Users control permissions.
+* Risk limits are enforced.
+* Trading can result in losses.
+
+For hackathon demonstration, default to:
+
+```text
+PAPER TRADING
+```
+
+and:
+
+```text
+TESTNET
+```
+
+Do not market the system as a guaranteed profit generator.
+
+---
+
+# 65. ENVIRONMENT VARIABLES
+
+Create:
+
+`.env.example`
+
+Include placeholders for:
+
+```text
+DATABASE_URL=
+REDIS_URL=
+
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_VERIFY_TOKEN=
+
+PRIVY_APP_ID=
+PRIVY_APP_SECRET=
+
+GRAPH_API_KEY=
+
+HEDERA_NETWORK=
+HEDERA_ACCOUNT_ID=
+HEDERA_PRIVATE_KEY=
+
+ARC_NETWORK=
+ARC_RPC_URL=
+
+ENS_RPC_URL=
+
+CHAINLINK_CRE_CONFIG=
+
+LEDGER_CONFIG=
+
+UNISWAP_API_KEY=
+
+LLM_API_KEY=
+
+BAZANTIC_CONFIG=
+```
+
+Never commit secrets.
+
+---
+
+# 66. MONOREPO STRUCTURE
+
+Use:
+
+```text
+agentfi/
+│
+├── apps/
+│   ├── web/
+│   ├── api/
+│   ├── whatsapp/
+│   └── worker/
+│
+├── packages/
+│   ├── agents/
+│   ├── ai/
+│   ├── blockchain/
+│   ├── wallet/
+│   ├── marketplace/
+│   ├── risk/
+│   ├── payments/
+│   ├── database/
+│   ├── shared/
+│   └── config/
+│
+├── contracts/
+│   ├── AgentMarketplace.sol
+│   ├── SubscriptionManager.sol
+│   ├── AgentPayment.sol
+│   └── ReputationRegistry.sol
+│
+├── services/
+│   ├── graph/
+│   ├── hedera/
+│   ├── arc/
+│   ├── ens/
+│   ├── chainlink/
+│   ├── ledger/
+│   ├── uniswap/
+│   └── bazantic/
+│
+├── infra/
+│   ├── docker/
+│   ├── terraform/
+│   └── deployment/
+│
+├── docs/
+│   ├── architecture.md
+│   ├── api.md
+│   ├── security.md
+│   ├── agents.md
+│   └── demo.md
+│
+└── README.md
+```
+
+---
+
+# 67. SMART CONTRACTS
+
+Implement only what is necessary.
+
+## AgentMarketplace.sol
+
+Responsibilities:
+
+* Agent registration reference
+* Agent subscription
+* Platform fee
+* Developer payout
+
+## SubscriptionManager.sol
+
+Responsibilities:
+
+* Subscription state
+* Start/end
+* Renewal
+
+## ReputationRegistry.sol
+
+Responsibilities:
+
+* Agent reputation references
+* Review hashes / attestations where appropriate
+
+Do not put unnecessary AI logic onchain.
+
+AI computation remains offchain.
+
+Blockchain handles:
+
+* Ownership
+* Payments
+* Permissions where appropriate
+* Settlement
+* Verification
+
+---
+
+# 68. ARCHITECTURAL PRINCIPLE
+
+Follow:
+
+```text
+AI = Intelligence
+
+WhatsApp = Interface
+
+PostgreSQL = Application state
+
+Redis = Speed/events
+
+The Graph = Blockchain data
+
+Hedera = Agent service payments
+
+Arc = Stablecoin economy
+
+Privy = Wallet abstraction
+
+ENS = Agent identity
+
+Ledger = Secure signing
+
+Chainlink = Confidential risk
+
+Uniswap = Execution
+
+Bazantic = Agent service composition
+```
+
+---
+
+# 69. BOUNTY ALIGNMENT
+
+Design the implementation to meaningfully target:
+
+## The Graph
+
+Live blockchain intelligence.
+
+## Hedera
+
+Agent discovery + x402 agent-to-agent payment.
+
+## Arc
+
+USDC-based agent economy.
+
+## Privy
+
+Walletless embedded account.
+
+## ENS
+
+Agent identity and reputation.
+
+## Ledger
+
+Secure agent execution and human approval.
+
+## Chainlink
+
+Confidential risk evaluation.
+
+## Uniswap
+
+DEX execution.
+
+## Bazantic
+
+MCP/x402 service recipes.
+
+## Optional World
+
+Human-backed developer verification.
+
+Do NOT integrate sponsor technology superficially.
+
+Every sponsor integration must be visible in the architecture and demo.
+
+---
+
+# 70. DOCUMENTATION
+
+README must contain:
+
+1. Problem
+2. Solution
+3. Architecture
+4. Agent architecture
+5. Web3 architecture
+6. Sponsor integrations
+7. Setup
+8. Environment variables
+9. Database
+10. Local development
+11. Testnet deployment
+12. WhatsApp setup
+13. Demo instructions
+14. Security model
+15. Risk model
+16. Screenshots
+17. Video demo
+18. Known limitations
+
+---
+
+# 71. CODE QUALITY
+
+Requirements:
+
+* Type safety
+* Pydantic validation
+* Clear interfaces
+* Dependency injection
+* Modular agents
+* No duplicated business logic
+* Centralized configuration
+* Error handling
+* Structured logging
+* Tests
+* Documentation
+
+Avoid:
+
+* Giant files
+* Hardcoded secrets
+* Hardcoded wallet addresses
+* Hardcoded sponsor API calls scattered across the codebase
+* Direct LLM-to-blockchain access
+* Unvalidated AI output
+
+---
+
+# 72. AI SAFETY ARCHITECTURE
+
+The LLM is NOT trusted.
+
+Treat LLM output as:
+
+```text
+UNTRUSTED INTENT
+```
+
+Flow:
+
+```text
+LLM
+ ↓
+Structured output validation
+ ↓
+Business rules
+ ↓
+Risk engine
+ ↓
+Permission engine
+ ↓
+Transaction simulation
+ ↓
+Approval
+ ↓
+Execution
+```
+
+Never:
+
+```text
+LLM
+ ↓
+PRIVATE KEY
+ ↓
+BLOCKCHAIN
+```
+
+---
+
+# 73. OBSERVABILITY FOR AGENTS
+
+For every invocation store:
+
+```text
+agent_id
+user_id
+request_id
+input_summary
+tool_calls
+latency
+result_status
+payment_required
+payment_status
+risk_decision
+timestamp
+```
+
+Do not store unnecessary sensitive user information.
+
+---
+
+# 74. FINAL DEMO STORY
+
+The final 3-minute hackathon demo must tell this story:
+
+## Scene 1
+
+A beginner opens WhatsApp.
+
+"I want to invest $100 in crypto but I don't know what I'm doing."
+
+## Scene 2
+
+AgentFi asks:
+
+"What's your risk level?"
+
+User:
+
+"Medium."
+
+## Scene 3
+
+AgentFi recommends:
+
+"Balanced Alpha Pack."
+
+User buys it.
+
+## Scene 4
+
+No MetaMask.
+
+Privy creates the embedded wallet.
+
+## Scene 5
+
+Agents analyze:
+
+NewsScout
+MarketMind
+WhaleWatcher
+SentimentAgent
+
+## Scene 6
+
+The orchestrator needs specialized analysis.
+
+It discovers another agent.
+
+## Scene 7
+
+The agent pays that service using Hedera x402.
+
+## Scene 8
+
+RiskGuardian evaluates the trade.
+
+## Scene 9
+
+Chainlink confidential workflow validates sensitive risk parameters.
+
+## Scene 10
+
+Trade exceeds the autonomous limit.
+
+Ledger requests human approval.
+
+## Scene 11
+
+User approves.
+
+## Scene 12
+
+Privy smart account executes the Uniswap testnet swap.
+
+## Scene 13
+
+WhatsApp:
+
+"✅ Trade completed."
+
+## Scene 14
+
+Marketplace:
+
+WhaleWatcher receives:
+
+* Payment
+* User rating
+* Reputation update
+
+The entire cycle demonstrates:
+
+**AI + Agents + Marketplace + Payments + Identity + Security + Privacy + DeFi + WhatsApp.**
+
+---
+
+# 75. SUCCESS CRITERIA
+
+The project is considered complete when:
+
+### User
+
+* Can register from WhatsApp.
+* Can receive an embedded wallet.
+* Can set risk preferences.
+* Can browse agents.
+* Can subscribe to an agent.
+* Can buy an agent pack.
+* Can receive signals.
+* Can request analysis.
+* Can see portfolio.
+* Can approve/reject actions.
+* Can rate agents.
+
+### Agents
+
+* Can collaborate.
+* Can call tools.
+* Can discover services.
+* Can pay other agents.
+* Have identity.
+* Have reputation.
+* Have restricted permissions.
+
+### Web3
+
+* Embedded wallet works.
+* USDC payment works.
+* Hedera x402 demo works.
+* The Graph data works.
+* ENS identity works.
+* Uniswap testnet execution works.
+* Ledger approval flow works.
+* Chainlink confidential workflow works.
+
+### Security
+
+* No private keys exposed to LLM.
+* Spending limits enforced.
+* Expiring permissions enforced.
+* Withdrawals disabled for trading agents.
+* High-risk actions require approval.
+* Failed risk checks fail closed.
+
+---
+
+# 76. BUILD INSTRUCTIONS TO THE CODING AGENT
+
+Do NOT attempt to generate the entire codebase in one response.
+
+Work incrementally.
+
+For each phase:
+
+1. Explain what you are implementing.
+2. Create the required files.
+3. Implement the feature.
+4. Run tests.
+5. Fix errors.
+6. Update documentation.
+7. Show what is complete.
+8. Move to the next phase.
+
+Never fake an integration.
+
+If a sponsor API/SDK has changed:
+
+* Check the current official documentation.
+* Use the current SDK/API.
+* Do not invent methods.
+* Do not invent endpoints.
+* Do not use deprecated APIs when a current API exists.
+
+Before implementing each sponsor integration, verify the current ETHOnline 2026 bounty requirements and official sponsor documentation.
+
+---
+
+# 77. PRIORITY RULE
+
+If time becomes limited, prioritize in this order:
+
+### Tier S
+
+1. WhatsApp
+2. Agent Marketplace
+3. Multi-agent architecture
+4. Privy embedded wallet
+5. The Graph
+6. Hedera x402
+7. Risk/permission engine
+
+### Tier A
+
+8. ENS
+9. Arc
+10. Ledger
+11. Uniswap
+
+### Tier B
+
+12. Chainlink CRE
+13. Bazantic
+14. World
+
+However, the final submission should clearly document every completed sponsor integration.
+
+---
+
+# 78. FINAL PRODUCT PRINCIPLE
+
+The final product must NOT look like:
+
+"An AI trading bot with nine sponsor logos."
+
+It must look like:
+
+# A REAL AI AGENT ECONOMY
+
+Where:
+
+```text
+Developers
+    ↓
+Build Agents
+    ↓
+Publish Agents
+    ↓
+ENS Identity
+    ↓
+Agent Marketplace
+    ↓
+Users Discover Agents
+    ↓
+Users Subscribe
+    ↓
+Privy Embedded Wallet
+    ↓
+Agents Collaborate
+    ↓
+Agents Buy Services
+    ↓
+Hedera x402
+    ↓
+USDC Economy
+    ↓
+The Graph Intelligence
+    ↓
+Risk Engine
+    ↓
+Chainlink Confidential Workflow
+    ↓
+Ledger Security
+    ↓
+Uniswap Execution
+    ↓
+Agent Performance
+    ↓
+Reputation
+    ↓
+More Users
+    ↓
+More Developers
+    ↓
+Larger Agent Economy
+```
+
+The ultimate vision is:
+
+> **Anyone should be able to say what they want done in natural language, and AgentFi should find, hire, coordinate, pay, and manage the right AI agents to accomplish it—without the user needing to understand Web3.**
+
+Start with the financial-agent use case because it creates the strongest ETHOnline demo, but architect the marketplace generically enough that the same infrastructure can later support:
+
+* Cold-email agents
+* Research agents
+* Coding agents
+* Marketing agents
+* Data agents
+* Travel agents
+* Productivity agents
+* Business automation agents
+
+**Build AgentFi as an agent economy, not merely a trading application.**

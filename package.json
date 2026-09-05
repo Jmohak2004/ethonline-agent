@@ -1,0 +1,29 @@
+{
+  "name": "agentfi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AgentFi — Your AI agent economy, directly in WhatsApp.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "web": "turbo dev --filter=web",
+    "api": "cd apps/api && uvicorn main:app --reload --port 8000",
+    "whatsapp": "cd apps/whatsapp && uvicorn main:app --reload --port 8001",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "db:migrate": "cd apps/api && alembic upgrade head",
+    "db:revision": "cd apps/api && alembic revision --autogenerate"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
