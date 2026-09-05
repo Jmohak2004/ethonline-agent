@@ -499,78 +499,78 @@ export default function AgentDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090C] text-slate-100 selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-[#F7F4EE] text-[#1E1611]">
       {/* Header */}
       <AppHeader
         backHref="/marketplace"
         backLabel="Marketplace"
         badge={
-          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">
+          <span className="badge-brand">
             ENS: {agent.ensName}
           </span>
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Agent Details */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
+            <div className="p-6 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611]">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center">
-                    <Bot className="w-8 h-8 text-emerald-400" />
+                  <div className="w-14 h-14 rounded-lg bg-[#EFEBE1] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611] flex items-center justify-center text-2xl">
+                    <Bot className="w-7 h-7 text-[#7A543A]" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <h1 className="text-2xl font-extrabold text-[#1E1611] tracking-tight flex items-center gap-2">
                       {agent.name}
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                      <span className="text-[11px] px-2 py-0.5 rounded font-mono bg-[#EFEBE1] border border-[#DCD4C4] text-[#857467]">
                         v{agent.version}
                       </span>
                     </h1>
-                    <p className="text-sm text-slate-400 mt-0.5">By {agent.developer}</p>
+                    <p className="text-xs font-semibold text-[#857467] mt-0.5">Developer: {agent.developer}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-bold">
-                  <Star className="w-4 h-4 fill-amber-400" />
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#EFEBE1] border border-[#1E1611] text-xs font-extrabold text-[#1E1611]">
+                  <Star className="w-3.5 h-3.5 fill-[#1E1611] text-[#1E1611]" />
                   {agent.rating} ({agent.ratingCount})
                 </div>
               </div>
 
-              <p className="mt-6 text-slate-300 leading-relaxed text-sm">
+              <p className="mt-5 text-[#5E5045] leading-relaxed text-sm font-medium">
                 {agent.longDescription}
               </p>
 
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800">
-                <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60">
-                  <span className="text-xs text-slate-500 block">Performance</span>
-                  <span className="text-base font-bold text-emerald-400">{agent.historicalPnl}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[#DCD4C4]">
+                <div className="p-3 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4]">
+                  <span className="text-[10px] font-bold text-[#857467] block uppercase tracking-wider">Performance</span>
+                  <span className="text-base font-extrabold text-[#245233]">{agent.historicalPnl}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60">
-                  <span className="text-xs text-slate-500 block">Max Drawdown</span>
-                  <span className="text-base font-bold text-rose-400">{agent.maxDrawdown}</span>
+                <div className="p-3 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4]">
+                  <span className="text-[10px] font-bold text-[#857467] block uppercase tracking-wider">Max Drawdown</span>
+                  <span className="text-base font-extrabold text-[#873322]">{agent.maxDrawdown}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60">
-                  <span className="text-xs text-slate-500 block">Active Users</span>
-                  <span className="text-base font-bold text-slate-200">{agent.activeUsers.toLocaleString()}</span>
+                <div className="p-3 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4]">
+                  <span className="text-[10px] font-bold text-[#857467] block uppercase tracking-wider">Active Users</span>
+                  <span className="text-base font-extrabold text-[#1E1611]">{agent.activeUsers.toLocaleString()}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60">
-                  <span className="text-xs text-slate-500 block">Reputation Score</span>
-                  <span className="text-base font-bold text-cyan-400">{agent.performanceScore}/100</span>
+                <div className="p-3 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4]">
+                  <span className="text-[10px] font-bold text-[#857467] block uppercase tracking-wider">Reputation</span>
+                  <span className="text-base font-extrabold text-[#7A543A]">{agent.performanceScore}/100</span>
                 </div>
               </div>
             </div>
 
             {/* Capabilities */}
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-amber-400" /> Agent Capabilities
+            <div className="p-6 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611]">
+              <h2 className="text-base font-extrabold text-[#1E1611] mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#7A543A]" /> Capabilities &amp; Recipes
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {agent.capabilities.map((cap: string, i: number) => (
-                  <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950/40 border border-slate-800/80 text-sm text-slate-300">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4] text-xs font-semibold text-[#1E1611]">
+                    <CheckCircle className="w-3.5 h-3.5 text-[#245233] shrink-0" />
                     {cap}
                   </div>
                 ))}
@@ -578,23 +578,21 @@ export default function AgentDetailPage() {
             </div>
 
             {/* Reviews */}
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-cyan-400" /> User Reviews & Verifications
+            <div className="p-6 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611]">
+              <h2 className="text-base font-extrabold text-[#1E1611] mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#7A543A]" /> Verified Community Feedback
               </h2>
               <div className="space-y-3">
                 {agent.reviews.map((rev: any, idx: number) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-semibold text-slate-300">{rev.user}</span>
-                      <span className="text-xs text-slate-500">{rev.date}</span>
+                  <div key={idx} className="p-3.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-[#1E1611]">{rev.user}</span>
+                      <span className="text-[11px] text-[#857467]">{rev.date}</span>
                     </div>
-                    <div className="flex items-center gap-1 mb-2">
-                      {[...Array(rev.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      ))}
+                    <div className="flex items-center gap-1 mb-1.5 text-xs text-[#1E1611]">
+                      {"★".repeat(rev.rating)}
                     </div>
-                    <p className="text-sm text-slate-400">{rev.comment}</p>
+                    <p className="text-xs text-[#5E5045] font-medium leading-relaxed">{rev.comment}</p>
                   </div>
                 ))}
               </div>
@@ -604,22 +602,18 @@ export default function AgentDetailPage() {
           {/* Right Column: Pricing & Security Guardrails */}
           <div className="space-y-6">
             {/* Subscribe Card */}
-            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 shadow-xl shadow-emerald-950/20">
-              <span className="text-xs font-semibold tracking-wider text-emerald-400 uppercase">Subscription</span>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-white">${agent.priceMonthly.toFixed(2)}</span>
-                <span className="text-slate-400 text-sm">USDC / month</span>
+            <div className="p-6 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[5px_5px_0px_#1E1611]">
+              <span className="badge-brand text-[10px] mb-2">Verified Plan</span>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl font-extrabold text-[#1E1611]">${agent.priceMonthly.toFixed(2)}</span>
+                <span className="text-xs font-bold text-[#857467]">USDC / month</span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Or $0.02 per query via Hedera x402 inter-agent payment</p>
+              <p className="text-xs text-[#5E5045] mt-1 font-medium">Or 0.25 HBAR ($0.02) per query via Hedera x402</p>
 
               <button
                 onClick={handleSubscribe}
                 disabled={subscribing || subscribed}
-                className={`w-full mt-6 py-3 px-4 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 ${
-                  subscribed
-                    ? "bg-emerald-600 text-white cursor-default"
-                    : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20"
-                }`}
+                className="w-full mt-5 btn-primary py-3 text-sm font-bold"
               >
                 {subscribing ? (
                   <>
@@ -638,34 +632,34 @@ export default function AgentDetailPage() {
                   </>
                 )}
               </button>
-              <p className="text-[11px] text-center text-slate-500 mt-2">
-                No seed phrases • Privy embedded wallet • Cancel anytime in WhatsApp
+              <p className="text-[11px] text-center text-[#857467] font-medium mt-2.5">
+                No seed phrases • Privy embedded account • Cancel in WhatsApp
               </p>
             </div>
 
             {/* Permission Guardrails */}
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-400" /> Granted Permissions
+            <div className="p-6 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611]">
+              <h3 className="text-sm font-extrabold text-[#1E1611] mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-[#7A543A]" /> Security Policy &amp; Limits
               </h3>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {agent.requiredPermissions.map((perm: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 flex items-center gap-2">
+                  <div key={i} className="flex items-center justify-between p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4] text-xs">
+                    <span className="text-[#1E1611] font-semibold flex items-center gap-2">
                       {perm.granted ? (
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCircle className="w-3.5 h-3.5 text-[#245233]" />
                       ) : (
-                        <Lock className="w-3.5 h-3.5 text-rose-400" />
+                        <Lock className="w-3.5 h-3.5 text-[#873322]" />
                       )}
                       {perm.name}
                     </span>
                     {perm.limit && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">
+                      <span className="badge-brand text-[10px]">
                         {perm.limit}
                       </span>
                     )}
                     {perm.blocked && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">
+                      <span className="badge-negative text-[10px]">
                         BLOCKED
                       </span>
                     )}

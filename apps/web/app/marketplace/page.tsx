@@ -234,19 +234,19 @@ export default function MarketplacePage() {
         backHref="/"
         backLabel="Home"
         badge={
-          <div className="flex gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex gap-1 bg-[#EFEBE1] p-1 rounded-lg border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611]">
             <button
               onClick={() => setView("agents")}
-              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-lg transition ${
-                view === "agents" ? "bg-indigo-600 text-white font-semibold shadow-sm" : "text-slate-400 hover:text-white"
+              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-md font-bold transition ${
+                view === "agents" ? "bg-[#1E1611] text-[#F7F4EE]" : "text-[#5E5045] hover:text-[#1E1611]"
               }`}
             >
               <Bot size={12} /> Agents
             </button>
             <button
               onClick={() => setView("packs")}
-              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-lg transition ${
-                view === "packs" ? "bg-indigo-600 text-white font-semibold shadow-sm" : "text-slate-400 hover:text-white"
+              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-md font-bold transition ${
+                view === "packs" ? "bg-[#1E1611] text-[#F7F4EE]" : "text-[#5E5045] hover:text-[#1E1611]"
               }`}
             >
               <Zap size={12} /> Packs
@@ -255,41 +255,44 @@ export default function MarketplacePage() {
         }
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            {view === "agents" ? "Agent Marketplace" : "Agent Packs"}
+          <div className="badge-brand mb-2">
+            {view === "agents" ? "Directory" : "Curated Bundles"}
+          </div>
+          <h1 className="text-3xl font-extrabold text-[#1E1611] tracking-tight mb-2">
+            {view === "agents" ? "Agent Marketplace" : "Pre-Built Agent Packs"}
           </h1>
-          <p style={{ color: "var(--text-secondary)" }}>
+          <p className="text-sm text-[#5E5045] font-medium">
             {view === "agents"
-              ? "Discover AI agents with verified ENS identities, reputation scores, and transparent performance history."
-              : "Curated bundles of agents for different trading strategies."}
+              ? "Verified ENS agents on Ethereum with onchain reputations and transparent limits."
+              : "Pre-composed agent teams for balanced alpha and risk monitoring."}
           </p>
         </div>
 
         {view === "agents" ? (
           <>
             {/* Search & Filter */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3.5 mb-6">
               <div className="relative flex-1">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#857467]" />
                 <input
                   className="input pl-10"
-                  placeholder="Search agents..."
+                  placeholder="Search agents by name, ENS, or capability..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <select
-                className="input w-auto"
+                className="input w-auto font-semibold"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                style={{ width: "auto", minWidth: 140 }}
+                style={{ width: "auto", minWidth: 150 }}
               >
-                <option value="rating">Top Rated</option>
-                <option value="users">Most Popular</option>
-                <option value="price">Lowest Price</option>
+                <option value="rating">Sort: Top Rated</option>
+                <option value="users">Sort: Most Popular</option>
+                <option value="price">Sort: Lowest Price</option>
               </select>
             </div>
 
@@ -299,12 +302,11 @@ export default function MarketplacePage() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition border-2 border-[#1E1611] ${
                     selectedCategory === cat
-                      ? "bg-indigo-600 text-white border-transparent"
-                      : "border text-secondary"
+                      ? "bg-[#1E1611] text-[#F7F4EE] shadow-[2px_2px_0px_#7A543A]"
+                      : "bg-[#FFFFFF] text-[#5E5045] hover:bg-[#EFEBE1]"
                   }`}
-                  style={selectedCategory !== cat ? { border: "1px solid var(--border-default)", color: "var(--text-secondary)" } : {}}
                 >
                   {cat}
                 </button>
@@ -312,152 +314,108 @@ export default function MarketplacePage() {
             </div>
 
             {/* Agent Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredAgents.map((agent, i) => (
-                <motion.div
-                  key={agent.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                >
-                  <Link href={`/agents/${agent.id}`}>
-                    <div className="agent-card group h-full flex flex-col">
-                      {/* Badges */}
-                      <div className="absolute top-4 right-4 flex gap-1">
-                        {agent.trending && (
-                          <span className="badge-positive text-xs px-2 py-0.5 rounded-full">🔥</span>
-                        )}
-                        {agent.featured && (
-                          <span className="badge-brand text-xs px-2 py-0.5 rounded-full">⭐</span>
-                        )}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredAgents.map((agent) => (
+                <Link key={agent.id} href={`/agents/${agent.id}`} className="agent-card">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#EFEBE1] border-2 border-[#1E1611] flex items-center justify-center text-xl shadow-[2px_2px_0px_#1E1611]">
+                        {agent.icon}
                       </div>
-
-                      {/* Header */}
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                          style={{ background: "rgba(99,102,241,0.1)", border: "1px solid var(--border-default)" }}>
-                          {agent.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{agent.name}</div>
-                          <div className="text-xs mt-0.5 font-mono truncate" style={{ color: "var(--text-muted)" }}>
-                            {agent.ens}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-xs mb-4 flex-1 line-clamp-2" style={{ color: "var(--text-secondary)" }}>
-                        {agent.description}
-                      </p>
-
-                      {/* Stats row */}
-                      <div className="grid grid-cols-3 gap-2 mb-4 p-3 rounded-xl"
-                        style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-0.5">
-                            <Star size={10} className="text-yellow-400" fill="#facc15" />
-                            <span className="text-xs font-bold">{agent.rating}</span>
-                          </div>
-                          <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Rating</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs font-bold text-green-400">{agent.perf30d}</div>
-                          <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>30d Perf</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs font-bold text-red-400">{agent.drawdown}</div>
-                          <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Drawdown</div>
-                        </div>
-                      </div>
-
-                      {/* Capabilities */}
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {agent.capabilities.slice(0, 2).map((cap) => (
-                          <span key={cap} className="badge-brand text-xs px-2 py-0.5 rounded-md">
-                            {cap.replace(/_/g, " ")}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-3"
-                        style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                        <div>
-                          {agent.price === 0 ? (
-                            <span className="text-green-400 font-bold text-sm">Free</span>
-                          ) : agent.pricingModel === "PAY_PER_USE" ? (
-                            <span className="font-bold text-sm">
-                              ${agent.price}
-                              <span className="text-xs font-normal ml-0.5" style={{ color: "var(--text-muted)" }}>/query</span>
-                            </span>
-                          ) : (
-                            <span className="font-bold text-sm">
-                              ${agent.price}
-                              <span className="text-xs font-normal ml-0.5" style={{ color: "var(--text-muted)" }}>/mo</span>
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
-                          <Users size={10} />
-                          {(agent.users / 1000).toFixed(1)}K
-                        </div>
-                        <span className="btn-primary text-xs py-1.5 px-3 inline-block">
-                          Subscribe
-                        </span>
+                      <div>
+                        <div className="font-bold text-sm text-[#1E1611]">{agent.name}</div>
+                        <div className="text-[11px] font-mono text-[#857467]">{agent.ens}</div>
                       </div>
                     </div>
-                  </Link>
-                </motion.div>
+                    <span className="badge-neutral text-[10px]">
+                      {agent.category}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-[#5E5045] mb-3 line-clamp-2 leading-relaxed">
+                    {agent.description}
+                  </p>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-2 p-2 bg-[#EFEBE1] border border-[#DCD4C4] rounded-lg mb-3 text-center">
+                    <div>
+                      <span className="text-[10px] text-[#857467] block">Rating</span>
+                      <span className="text-xs font-bold text-[#1E1611]">{agent.rating} ★</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#857467] block">Perf (30d)</span>
+                      <span className="text-xs font-bold text-[#245233]">{agent.perf30d}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#857467] block">Drawdown</span>
+                      <span className="text-xs font-bold text-[#873322]">{agent.drawdown}</span>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-2 border-t border-[#DCD4C4]">
+                    <div>
+                      {agent.price === 0 ? (
+                        <span className="text-xs font-extrabold text-[#245233]">Free</span>
+                      ) : (
+                        <span className="text-xs font-extrabold text-[#1E1611]">
+                          ${agent.price}
+                          <span className="text-[10px] font-normal text-[#857467]">
+                            {agent.pricingModel === "PAY_PER_USE" ? "/query" : "/mo"}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    <span className="btn-primary text-xs py-1 px-3">
+                      View Profile
+                    </span>
+                  </div>
+                </Link>
               ))}
             </div>
 
             {filteredAgents.length === 0 && (
-              <div className="text-center py-20">
-                <Bot size={48} className="mx-auto mb-4" style={{ color: "var(--text-muted)" }} />
-                <p style={{ color: "var(--text-muted)" }}>No agents match your search. Try different filters.</p>
+              <div className="text-center py-16 p-8 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611]">
+                <Bot size={40} className="mx-auto mb-2 text-[#857467]" />
+                <p className="text-sm font-bold text-[#1E1611]">No agents match this category filter.</p>
               </div>
             )}
           </>
         ) : (
           /* Packs view */
-          <div className="grid md:grid-cols-3 gap-6">
-            {PACKS.map((pack, i) => (
-              <motion.div
+          <div className="grid md:grid-cols-3 gap-5">
+            {PACKS.map((pack) => (
+              <div
                 key={pack.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="card card-hover"
+                className="card flex flex-col justify-between"
               >
-                <div className="w-12 h-12 rounded-2xl mb-4 flex items-center justify-center"
-                  style={{ background: `${pack.color}22`, border: `1px solid ${pack.color}44` }}>
-                  <Zap size={24} style={{ color: pack.color }} />
-                </div>
-                <h3 className="text-lg font-bold mb-2">{pack.name}</h3>
-                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>{pack.description}</p>
-                <div className="space-y-1 mb-4">
-                  {pack.agents.map((a) => (
-                    <div key={a} className="flex items-center gap-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                      <span className="text-green-400 text-xs">✓</span> {a}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-4"
-                  style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                  <div>
-                    <div className="flex items-center gap-1 mb-1">
-                      <Star size={12} className="text-yellow-400" fill="#facc15" />
-                      <span className="text-sm font-semibold">{pack.rating}</span>
-                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>({pack.users.toLocaleString()} users)</span>
-                    </div>
-                    <div className="font-bold text-xl">${pack.price}<span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>/mo</span></div>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-extrabold text-[#1E1611]">{pack.name}</h3>
+                    <span className="badge-brand text-[10px]">${pack.price}/mo</span>
                   </div>
-                  <Link href="/packs" className="btn-primary text-sm inline-block">
-                    Get Pack
+                  <p className="text-xs text-[#5E5045] mb-4 leading-relaxed font-medium">{pack.description}</p>
+                  <div className="space-y-1.5 mb-4 p-3 bg-[#EFEBE1] rounded-lg border border-[#DCD4C4]">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#857467] block mb-1">
+                      Included Agents:
+                    </span>
+                    {pack.agents.map((a) => (
+                      <div key={a} className="flex items-center gap-2 text-xs font-semibold text-[#1E1611]">
+                        <span className="text-[#245233]">✓</span> {a}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-[#DCD4C4]">
+                  <div className="text-xs font-bold text-[#1E1611]">
+                    {pack.rating} ★ <span className="font-normal text-[#857467]">({pack.users.toLocaleString()} users)</span>
+                  </div>
+                  <Link href="/packs" className="btn-primary text-xs py-1.5 px-3">
+                    Activate Pack
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

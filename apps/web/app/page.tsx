@@ -5,57 +5,50 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot, TrendingUp, Shield, Zap, ChevronRight, Star, Users,
-  MessageCircle, Wallet, BarChart2, Globe, Lock, ArrowRight,
-  Activity, Cpu, DollarSign, Menu, X, Boxes
+  MessageCircle, Wallet, Lock, ArrowRight,
+  Activity, Cpu, DollarSign, Menu, X, CheckCircle2, XCircle
 } from "lucide-react";
 import UniversalFooter from "@/app/components/Footer";
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Agents Data ───────────────────────────────────────────────────────────────
 const DEMO_AGENTS = [
   { name: "WhaleWatcher", icon: "🐋", category: "ONCHAIN", rating: 4.8, users: 2340, price: 3, risk: "Medium", perf: "+12.4%", drawdown: "-7.1%", trending: true },
   { name: "NewsScout", icon: "📰", category: "NEWS", rating: 4.7, users: 1890, price: 2, risk: "Low", perf: "+8.2%", drawdown: "-3.1%", trending: false },
   { name: "MarketMind", icon: "📊", category: "TRADING", rating: 4.6, users: 3120, price: 4, risk: "Medium", perf: "+15.6%", drawdown: "-9.2%", trending: true },
   { name: "SentimentAgent", icon: "💭", category: "SENTIMENT", rating: 4.5, users: 980, price: 2, risk: "Low", perf: "+6.8%", drawdown: "-2.4%", trending: false },
-  { name: "RiskGuardian", icon: "🛡️", category: "RISK", rating: 4.9, users: 4210, price: 0, risk: "N/A", perf: "Always on", drawdown: "N/A", trending: false },
+  { name: "RiskGuardian", icon: "🛡️", category: "RISK", rating: 4.9, users: 4210, price: 0, risk: "N/A", perf: "Always on", drawdown: "0%", trending: false },
   { name: "ExecutionAgent", icon: "⚡", category: "TRADING", rating: 4.7, users: 1560, price: 3, risk: "Medium", perf: "+18.1%", drawdown: "-11.0%", trending: true },
 ];
 
 const STATS = [
-  { label: "Active Agents", value: "24", icon: Bot, color: "#818cf8" },
-  { label: "Users", value: "12.4K", icon: Users, color: "#10b981" },
-  { label: "Signals Today", value: "847", icon: Activity, color: "#f59e0b" },
-  { label: "Volume (USDC)", value: "$284K", icon: DollarSign, color: "#a855f7" },
+  { label: "Active Agents", value: "24", icon: Bot },
+  { label: "Subscribed Wallets", value: "12.4K", icon: Users },
+  { label: "Daily Signals", value: "847", icon: Activity },
+  { label: "USDC Volume", value: "$284K", icon: DollarSign },
 ];
 
 const WHATSAPP_DEMO = [
   { from: "user", text: "I have $100. I want medium-risk crypto opportunities." },
-  { from: "agent", text: "Got it! Your profile:\n\n💰 Budget: $100\n⚖️ Risk: Medium\n🔒 Max trade: $20\n🛑 Daily loss limit: $10\n\nI found a great match for you:\n\n🌟 Balanced Alpha Pack\n• NewsScout 📰\n• MarketMind 📊\n• WhaleWatcher 🐋\n• RiskGuardian 🛡️\n\n$5/month\n\nActivate?" },
+  { from: "agent", text: "Profile configured:\n💰 Budget: $100\n⚖️ Risk: Medium\n🔒 Max Trade: $20\n🛑 Loss Cap: $10\n\nRecommended: Balanced Alpha Pack ($5/mo)\n• NewsScout 📰 • MarketMind 📊\n• WhaleWatcher 🐋 • RiskGuardian 🛡️\n\nActivate?" },
   { from: "user", text: "Yes" },
-  { from: "agent", text: "✅ Activated! Your agents are now working...\n\n🐋 WhaleWatcher: Large accumulation detected on ETH\n📰 NewsScout: Positive protocol news\n📊 MarketMind: Bullish trend confirmed\n\n🔮 Signal: POTENTIAL_UPSIDE\nConfidence: 78%\n\nApprove $20 trade on ETH?" },
+  { from: "agent", text: "✅ Activated.\n\n🐋 WhaleWatcher: Accumulation on ETH ($18.4M)\n📊 MarketMind: Bullish momentum confirmed\n🛡️ RiskGuardian: Trade amount $20 within limits\n\nApprove $20 testnet swap into ETH?" },
 ];
 
 const INTEGRATIONS = [
-  { name: "WhatsApp", desc: "Primary interface", color: "#25d366" },
-  { name: "Privy", desc: "Embedded wallets", color: "#7c3aed" },
-  { name: "The Graph", desc: "Onchain data", color: "#6f4ef2" },
-  { name: "Hedera", desc: "Agent payments", color: "#00c2cb" },
-  { name: "Arc/USDC", desc: "Stablecoin layer", color: "#2563eb" },
-  { name: "ENS", desc: "Agent identity", color: "#4c51bf" },
-  { name: "Uniswap", desc: "DEX execution", color: "#ff007a" },
-  { name: "Chainlink", desc: "Confidential risk", color: "#375bd2" },
-  { name: "Ledger", desc: "Secure signing", color: "#f97316" },
+  { name: "WhatsApp", desc: "Twilio Sandbox & Meta API" },
+  { name: "Privy", desc: "Embedded Account Abstraction" },
+  { name: "The Graph", desc: "Decentralized Subgraph Indexing" },
+  { name: "Hedera", desc: "x402 Micropayments & HCS" },
+  { name: "Arc / USDC", desc: "Stablecoin Revenue Splits" },
+  { name: "ENS", desc: "*.agentfi.eth Subnames" },
+  { name: "Uniswap", desc: "Exact Swap Execution" },
+  { name: "Chainlink", desc: "CRE Confidential TEE Guard" },
+  { name: "Ledger", desc: "Hardware Clear-Signing" },
 ];
 
 // ── Components ────────────────────────────────────────────────────────────────
 function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
 
   const navLinks = [
     { label: "Marketplace", href: "/marketplace" },
@@ -68,79 +61,58 @@ function Navbar() {
   ];
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass-strong py-3 shadow-lg" : "py-5"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
-            <Cpu size={16} className="text-white" />
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#F7F4EE]/95 backdrop-blur-md border-b-2 border-[#1E1611]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-lg bg-[#1E1611] flex items-center justify-center border-2 border-[#1E1611] shadow-[2px_2px_0px_#7A543A]">
+            <Cpu size={15} className="text-[#F7F4EE]" />
           </div>
-          <span className="text-xl font-bold gradient-text">AgentFi</span>
+          <span className="font-extrabold text-lg text-[#1E1611] tracking-tight">AgentFi</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1.5">
           {navLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="btn-ghost text-sm"
+              className="px-3 py-1.5 text-xs font-semibold text-[#5E5045] hover:text-[#1E1611] hover:bg-[#EFEBE1] rounded-lg border-2 border-transparent transition"
             >
               {item.label}
             </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/marketplace" className="btn-secondary text-sm hidden sm:flex">
+        <div className="flex items-center gap-2.5">
+          <Link href="/marketplace" className="btn-secondary text-xs hidden sm:flex">
             Browse Agents
           </Link>
-          <Link href="/demo" className="btn-primary text-sm hidden sm:flex">
-            Launch Demo <ArrowRight size={14} />
+          <Link href="/demo" className="btn-primary text-xs">
+            Launch Demo <ArrowRight size={13} />
           </Link>
 
-          {/* Mobile hamburger button */}
+          {/* Mobile toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white bg-slate-900 border border-slate-800"
+            className="md:hidden p-2 rounded-lg text-[#1E1611] bg-[#EFEBE1] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611]"
             aria-label="Toggle navigation"
           >
-            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-[#0B0D13]/95 backdrop-blur-xl px-6 py-4 space-y-2 shadow-2xl mt-3">
+        <div className="md:hidden border-t-2 border-[#1E1611] bg-[#F7F4EE] px-4 py-3 space-y-1 shadow-[0_8px_0px_#1E1611]">
           {navLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/50"
+              className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#5E5045] hover:bg-[#EFEBE1]"
             >
               {item.label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-slate-800 flex gap-2">
-            <Link
-              href="/marketplace"
-              onClick={() => setMobileMenuOpen(false)}
-              className="btn-secondary text-xs flex-1 text-center py-2"
-            >
-              Marketplace
-            </Link>
-            <Link
-              href="/demo"
-              onClick={() => setMobileMenuOpen(false)}
-              className="btn-primary text-xs flex-1 text-center py-2"
-            >
-              Demo
-            </Link>
-          </div>
         </div>
       )}
     </nav>
@@ -149,97 +121,46 @@ function Navbar() {
 
 function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background grid */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
-        }}
-      />
+    <section className="pt-32 pb-16 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        {/* Neu-brutal Tag */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EFEBE1] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611] mb-6">
+          <span className="w-2 h-2 rounded-full bg-[#245233]" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#1E1611]">
+            ETHOnline 2026 • Verified AI Agent Economy
+          </span>
+        </div>
 
-      {/* Radial glows */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl"
-        style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }} />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-8 blur-3xl"
-        style={{ background: "radial-gradient(circle, #a855f7 0%, transparent 70%)" }} />
+        {/* Crisp Headline */}
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-[#1E1611] tracking-tight leading-[1.1] mb-5">
+          Your AI agent portfolio, <br />
+          <span className="text-[#7A543A]">directly in WhatsApp.</span>
+        </h1>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-sm font-medium"
-          style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", color: "#818cf8" }}
-        >
-          <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-          ETHOnline 2026 Hackathon Project
-          <ChevronRight size={14} />
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight"
-        >
-          Your AI Agent Economy,
-          <br />
-          <span className="gradient-text">Directly in WhatsApp</span>
-        </motion.h1>
-
-        {/* Subheading */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-lg md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Discover AI agents that research markets, track whales, and execute trades.
-          No MetaMask. No seed phrases. No complexity.
-          <br />
-          <strong className="text-indigo-400">Just WhatsApp.</strong>
-        </motion.p>
+        {/* Crisp Subhead */}
+        <p className="text-base sm:text-lg text-[#5E5045] max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
+          Specialized data agents detect alpha, collaborate over Hedera x402, and execute onchain under hard RiskGuardian limits. No seed phrases.
+        </p>
 
         {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <Link href="/marketplace" className="btn-primary text-base px-7 py-3.5 animate-pulse-glow">
-            <Bot size={18} />
-            Explore Agent Marketplace
+        <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center mb-16">
+          <Link href="/marketplace" className="btn-primary text-sm px-6 py-3 w-full sm:w-auto">
+            <Bot size={16} /> Explore Marketplace
           </Link>
-          <Link href="/demo" className="btn-secondary text-base px-7 py-3.5">
-            <MessageCircle size={18} />
-            Try Live Interactive Demo
+          <Link href="/demo" className="btn-secondary text-sm px-6 py-3 w-full sm:w-auto">
+            <MessageCircle size={16} /> Interactive Demo Runner
           </Link>
-        </motion.div>
+        </div>
 
-        {/* Stats row */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16"
-        >
+        {/* Minimal Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {STATS.map((stat) => (
-            <div key={stat.label} className="card text-center">
-              <stat.icon size={20} className="mx-auto mb-2" style={{ color: stat.color }} />
-              <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-              <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>{stat.label}</div>
+            <div key={stat.label} className="p-4 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611] text-left">
+              <span className="text-xs font-semibold text-[#857467] block mb-1">{stat.label}</span>
+              <div className="text-2xl font-extrabold text-[#1E1611]">{stat.value}</div>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -250,123 +171,89 @@ function WhatsAppDemo() {
 
   useEffect(() => {
     if (visibleMessages < WHATSAPP_DEMO.length) {
-      const timer = setTimeout(() => setVisibleMessages(v => v + 1), 1200);
+      const timer = setTimeout(() => setVisibleMessages(v => v + 1), 1100);
       return () => clearTimeout(timer);
     }
   }, [visibleMessages]);
 
   return (
-    <section id="demo" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          {/* Left: Copy */}
-          <div>
-            <div className="badge-brand inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6">
-              <MessageCircle size={12} />
-              WhatsApp Interface
+    <section className="py-16 px-4 sm:px-6 bg-[#EFEBE1] border-y-2 border-[#1E1611]">
+      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div className="badge-brand mb-4">
+            Zero-Friction Interface
+          </div>
+          <h2 className="text-3xl font-extrabold text-[#1E1611] tracking-tight mb-4">
+            Complex DeFi. <br />
+            Simple Conversation.
+          </h2>
+          <p className="text-sm text-[#5E5045] leading-relaxed mb-6 font-medium">
+            Users state goals naturally. Autonomous agents parse intent, coordinate onchain research, and present clear confirmations.
+          </p>
+
+          <div className="space-y-3 font-semibold text-xs text-[#1E1611]">
+            <div className="p-3 rounded-lg bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611] flex items-center gap-2.5">
+              <CheckCircle2 size={16} className="text-[#245233]" />
+              <span>Privy Account Abstraction maps phone number to MPC wallet</span>
             </div>
-            <h2 className="text-4xl font-bold mb-6 leading-tight">
-              Web3 should be{" "}
-              <span className="gradient-text">infrastructure</span>,
-              <br />not user experience.
-            </h2>
-            <p className="text-lg mb-8" style={{ color: "var(--text-secondary)" }}>
-              Users shouldn't need to understand seed phrases, gas fees, or wallet addresses.
-              They should just say what they want, in plain English, on WhatsApp.
-            </p>
-            <ul className="space-y-4">
-              {[
-                { icon: Wallet, text: "Embedded wallet created automatically — no MetaMask" },
-                { icon: Bot, text: "AI agents work in the background on your behalf" },
-                { icon: Shield, text: "Your risk limits are always enforced by RiskGuardian" },
-                { icon: TrendingUp, text: "Trades executed on testnet until you're ready" },
-              ].map((item) => (
-                <li key={item.text} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)" }}>
-                    <item.icon size={14} style={{ color: "#818cf8" }} />
-                  </div>
-                  <span style={{ color: "var(--text-secondary)" }}>{item.text}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="p-3 rounded-lg bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611] flex items-center gap-2.5">
+              <CheckCircle2 size={16} className="text-[#245233]" />
+              <span>RiskGuardian enforces $20 trade and $10 daily loss caps</span>
+            </div>
+            <div className="p-3 rounded-lg bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611] flex items-center gap-2.5">
+              <CheckCircle2 size={16} className="text-[#245233]" />
+              <span>Blockscout explorer verification sent with every trade</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Phone Mockup in Neu-Brutal Frame */}
+        <div className="w-full max-w-sm mx-auto rounded-2xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[6px_6px_0px_#1E1611] overflow-hidden">
+          {/* Phone Header */}
+          <div className="px-4 py-3 bg-[#1E1611] text-[#F7F4EE] flex items-center justify-between border-b-2 border-[#1E1611]">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-md bg-[#7A543A] flex items-center justify-center font-bold text-xs text-[#F7F4EE]">
+                AF
+              </div>
+              <div>
+                <span className="text-xs font-bold block">AgentFi AI</span>
+                <span className="text-[10px] text-[#DCD4C4] font-mono">WhatsApp Verified</span>
+              </div>
+            </div>
+            <span className="w-2 h-2 rounded-full bg-[#245233]" />
           </div>
 
-          {/* Right: Mock WhatsApp chat */}
-          <div>
-            <div
-              className="rounded-3xl overflow-hidden shadow-2xl"
-              style={{ border: "1px solid var(--border-default)", maxWidth: 380, margin: "0 auto" }}
-            >
-              {/* Chat header */}
-              <div className="flex items-center gap-3 px-5 py-4"
-                style={{ background: "#128C7E" }}>
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <Cpu size={20} className="text-white" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">AgentFi</div>
-                  <div className="text-white/70 text-xs">AI Agent Economy</div>
-                </div>
-                <div className="ml-auto flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
-                  <span className="text-white/70 text-xs">online</span>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="p-4 space-y-3 min-h-80" style={{ background: "#e5ddd5" }}>
-                <AnimatePresence>
-                  {WHATSAPP_DEMO.slice(0, visibleMessages).map((msg, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className="max-w-xs px-4 py-2.5 rounded-2xl text-sm shadow-sm whitespace-pre-wrap"
-                        style={{
-                          background: msg.from === "user" ? "#dcf8c6" : "white",
-                          color: "#1a1a1a",
-                          borderTopRightRadius: msg.from === "user" ? 4 : undefined,
-                          borderTopLeftRadius: msg.from === "agent" ? 4 : undefined,
-                        }}
-                      >
-                        {msg.text}
-                        <div className="text-right text-xs mt-1" style={{ color: "#666" }}>
-                          {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          {msg.from === "user" && " ✓✓"}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {visibleMessages < WHATSAPP_DEMO.length && (
-                  <motion.div className="flex justify-start" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }}>
-                    <div className="px-4 py-2 rounded-2xl bg-white shadow-sm">
-                      <div className="flex gap-1 items-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {visibleMessages >= WHATSAPP_DEMO.length && (
-                  <button
-                    onClick={() => setVisibleMessages(0)}
-                    className="w-full text-center text-xs py-2 rounded-xl"
-                    style={{ background: "rgba(0,0,0,0.05)", color: "#666" }}
+          {/* Messages */}
+          <div className="p-4 space-y-3 bg-[#F7F4EE] min-h-[300px]">
+            <AnimatePresence>
+              {WHATSAPP_DEMO.slice(0, visibleMessages).map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] px-3.5 py-2.5 rounded-lg text-xs leading-relaxed border-2 border-[#1E1611] whitespace-pre-wrap ${
+                      msg.from === "user"
+                        ? "bg-[#EFEBE1] text-[#1E1611] shadow-[2px_2px_0px_#1E1611]"
+                        : "bg-[#FFFFFF] text-[#1E1611] shadow-[2px_2px_0px_#7A543A]"
+                    }`}
                   >
-                    ↺ Replay demo
-                  </button>
-                )}
-              </div>
-            </div>
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {visibleMessages >= WHATSAPP_DEMO.length && (
+              <button
+                onClick={() => setVisibleMessages(0)}
+                className="w-full text-center text-[11px] font-bold text-[#7A543A] py-1.5 hover:underline"
+              >
+                ↺ Replay demo sequence
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -376,118 +263,67 @@ function WhatsAppDemo() {
 
 function AgentMarketplace() {
   return (
-    <section className="py-24 px-6" style={{ background: "var(--bg-elevated)" }}>
+    <section className="py-16 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <div className="badge-brand inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5">
-            <Globe size={12} />
-            Agent Marketplace
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+          <div>
+            <div className="badge-brand mb-2.5">
+              Verified Agents
+            </div>
+            <h2 className="text-3xl font-extrabold text-[#1E1611] tracking-tight">
+              Featured Intelligence Agents
+            </h2>
           </div>
-          <h2 className="text-4xl font-bold mb-4">
-            Discover & Subscribe to <span className="gradient-text">AI Agents</span>
-          </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text-secondary)" }}>
-            Every agent has a verified ENS identity, reputation score, and transparent performance history.
-          </p>
+          <Link href="/marketplace" className="btn-secondary text-xs">
+            View All 24 Agents <ChevronRight size={14} />
+          </Link>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {DEMO_AGENTS.map((agent, i) => (
-            <motion.div
-              key={agent.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-            >
-              <Link href={`/agents/${agent.name.toLowerCase()}`}>
-                <div className="agent-card group">
-                  {agent.trending && (
-                    <div className="absolute top-4 right-4">
-                      <span className="badge-positive text-xs px-2 py-0.5 rounded-full">🔥 Trending</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                      style={{ background: "rgba(99,102,241,0.1)", border: "1px solid var(--border-default)" }}>
-                      {agent.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base truncate">{agent.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="badge-brand text-xs px-2 py-0.5 rounded-md">{agent.category}</span>
-                        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                          {agent.name.toLowerCase()}.agentfi.eth
-                        </span>
-                      </div>
-                    </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {DEMO_AGENTS.map((agent) => (
+            <Link key={agent.name} href={`/agents/${agent.name.toLowerCase()}`} className="agent-card">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#EFEBE1] border-2 border-[#1E1611] flex items-center justify-center text-xl shadow-[2px_2px_0px_#1E1611]">
+                    {agent.icon}
                   </div>
-
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Rating</div>
-                      <div className="flex items-center gap-1">
-                        <Star size={12} className="text-yellow-400" fill="#facc15" />
-                        <span className="text-sm font-semibold">{agent.rating}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Users</div>
-                      <div className="flex items-center gap-1">
-                        <Users size={12} style={{ color: "var(--text-secondary)" }} />
-                        <span className="text-sm font-semibold">{(agent.users / 1000).toFixed(1)}K</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Risk</div>
-                      <div className="text-sm font-medium">
-                        <span className={
-                          agent.risk === "Low" ? "text-green-400" :
-                          agent.risk === "High" ? "text-red-400" :
-                          agent.risk === "N/A" ? "text-indigo-400" : "text-yellow-400"
-                        }>{agent.risk}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {agent.perf !== "Always on" && (
-                    <div className="flex items-center gap-3 mb-4 p-3 rounded-xl"
-                      style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)" }}>
-                      <div>
-                        <div className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>30d Performance</div>
-                        <div className="text-sm font-bold text-green-400">{agent.perf}</div>
-                      </div>
-                      <div className="ml-auto">
-                        <div className="text-xs mb-0.5 text-right" style={{ color: "var(--text-muted)" }}>Max Drawdown</div>
-                        <div className="text-sm font-bold text-red-400">{agent.drawdown}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-2"
-                    style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                    <div>
-                      {agent.price === 0 ? (
-                        <span className="text-green-400 font-bold text-sm">Free</span>
-                      ) : (
-                        <span className="font-bold">${agent.price}<span className="text-xs font-normal ml-0.5" style={{ color: "var(--text-muted)" }}>/mo</span></span>
-                      )}
-                    </div>
-                    <span className="btn-primary text-xs py-1.5 px-4 group-hover:shadow-lg transition-shadow inline-block">
-                      Subscribe
-                    </span>
+                  <div>
+                    <h3 className="font-bold text-sm text-[#1E1611]">{agent.name}</h3>
+                    <span className="text-[11px] font-mono text-[#857467]">{agent.name.toLowerCase()}.agentfi.eth</span>
                   </div>
                 </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                <span className="badge-neutral text-[10px]">
+                  {agent.category}
+                </span>
+              </div>
 
-        <div className="text-center mt-10">
-          <Link href="/marketplace" className="btn-secondary text-sm">
-            View All 24 Agents <ChevronRight size={16} />
-          </Link>
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 py-2 px-2.5 bg-[#EFEBE1] border border-[#DCD4C4] rounded-lg mb-3 text-center">
+                <div>
+                  <span className="text-[10px] text-[#857467] block">Rating</span>
+                  <span className="text-xs font-bold text-[#1E1611]">{agent.rating} ★</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#857467] block">Perf</span>
+                  <span className="text-xs font-bold text-[#245233]">{agent.perf}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#857467] block">Risk</span>
+                  <span className="text-xs font-bold text-[#7A543A]">{agent.risk}</span>
+                </div>
+              </div>
+
+              {/* Price & Action */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#DCD4C4]">
+                <div className="text-xs font-extrabold text-[#1E1611]">
+                  {agent.price === 0 ? "Free" : `$${agent.price}/mo`}
+                </div>
+                <span className="btn-primary text-xs py-1 px-3">
+                  View Agent
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
@@ -496,45 +332,27 @@ function AgentMarketplace() {
 
 function TechStack() {
   return (
-    <section className="py-24 px-6">
+    <section className="py-16 px-4 sm:px-6 bg-[#EFEBE1] border-t-2 border-[#1E1611]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <h2 className="text-4xl font-bold mb-4">
-            Built on the <span className="gradient-text">Best of Web3</span>
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="badge-brand mb-2.5">Protocol Integrations</div>
+          <h2 className="text-3xl font-extrabold text-[#1E1611] tracking-tight mb-2">
+            Verifiable Web3 Architecture
           </h2>
-          <p className="text-lg" style={{ color: "var(--text-secondary)" }}>
-            Every sponsor integration is meaningful, visible in the architecture, and demonstrated in the live system.
+          <p className="text-xs text-[#5E5045] font-medium">
+            Every sponsor integration is actively integrated in the multi-agent pipeline.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {INTEGRATIONS.map((tech, i) => (
-            <motion.div
-              key={tech.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: i * 0.06 }}
-              className="card card-hover flex items-center gap-4"
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex-shrink-0"
-                style={{ background: `${tech.color}22`, border: `1px solid ${tech.color}44` }}
-              >
-                <div className="w-full h-full flex items-center justify-center rounded-xl">
-                  <span className="font-bold text-xs" style={{ color: tech.color }}>
-                    {tech.name.slice(0, 2).toUpperCase()}
-                  </span>
-                </div>
+        <div className="grid sm:grid-cols-3 gap-3.5">
+          {INTEGRATIONS.map((tech) => (
+            <div key={tech.name} className="p-4 rounded-xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-bold text-sm text-[#1E1611]">{tech.name}</span>
+                <span className="w-2 h-2 rounded-full bg-[#7A543A]" />
               </div>
-              <div>
-                <div className="font-semibold text-sm">{tech.name}</div>
-                <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{tech.desc}</div>
-              </div>
-              <div className="ml-auto">
-                <div className="w-2 h-2 rounded-full" style={{ background: tech.color }} />
-              </div>
-            </motion.div>
+              <p className="text-xs text-[#5E5045] font-medium">{tech.desc}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -544,86 +362,52 @@ function TechStack() {
 
 function SecuritySection() {
   return (
-    <section className="py-24 px-6" style={{ background: "var(--bg-elevated)" }}>
+    <section className="py-16 px-4 sm:px-6 border-t-2 border-[#1E1611]">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="badge-brand inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6">
-              <Lock size={12} />
-              Security-First Design
-            </div>
-            <h2 className="text-4xl font-bold mb-6">
-              The LLM is <span className="text-red-400">never trusted</span>.
-              <br />
-              Your funds are <span className="gradient-text">always protected</span>.
+            <div className="badge-brand mb-3">Hard Safety Guardrails</div>
+            <h2 className="text-3xl font-extrabold text-[#1E1611] tracking-tight mb-4">
+              The LLM is Never Trusted. <br />
+              Funds are Always Safe.
             </h2>
-            <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-              Every financial action passes through a 14-step policy engine before execution.
-              Agents can never withdraw funds, modify their own permissions, or bypass RiskGuardian.
+            <p className="text-sm text-[#5E5045] leading-relaxed mb-6 font-medium">
+              Every trade proposal is verified deterministically against smart contract permissions and Chainlink TEE enclaves.
             </p>
 
-            <div className="space-y-3">
-              {[
-                { text: "Read blockchain data", allowed: true },
-                { text: "Analyze your portfolio", allowed: true },
-                { text: "Trade up to your set limit", allowed: true },
-                { text: "Withdraw funds", allowed: false },
-                { text: "Change permissions", allowed: false },
-                { text: "Transfer wallet ownership", allowed: false },
-              ].map((perm) => (
-                <div key={perm.text} className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                    perm.allowed ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
-                  }`}>
-                    {perm.allowed ? "✓" : "✗"}
-                  </div>
-                  <span className="text-sm" style={{ color: perm.allowed ? "var(--text-primary)" : "var(--text-muted)" }}>
-                    {perm.text}
-                  </span>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-2.5 font-semibold text-xs">
+              <div className="p-2.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4] flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-[#245233]" />
+                <span>Max $20 trade cap</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4] flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-[#245233]" />
+                <span>$10 daily loss cap</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4] flex items-center gap-2">
+                <XCircle size={14} className="text-[#873322]" />
+                <span>Withdrawals blocked</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#EFEBE1] border border-[#DCD4C4] flex items-center gap-2">
+                <XCircle size={14} className="text-[#873322]" />
+                <span>Permission edits blocked</span>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="card gradient-border">
-              <div className="flex items-center gap-3 mb-3">
-                <Zap size={16} style={{ color: "#818cf8" }} />
-                <span className="font-semibold text-sm">14-Step Transaction Policy Engine</span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  "User authenticated?",
-                  "Agent permission valid?",
-                  "Amount below limit?",
-                  "Daily limit available?",
-                  "RiskGuardian approved?",
-                  "Slippage acceptable?",
-                  "Human approval required?",
-                ].map((step, i) => (
-                  <div key={step} className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-xs flex-shrink-0 font-bold"
-                      style={{ background: "rgba(99,102,241,0.2)", color: "#818cf8" }}>
-                      {i + 1}
-                    </span>
-                    {step}
-                    <span className="ml-auto text-green-400">✓</span>
-                  </div>
-                ))}
-              </div>
+          <div className="p-6 rounded-2xl bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[5px_5px_0px_#1E1611]">
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b-2 border-[#1E1611]">
+              <Lock size={15} className="text-[#7A543A]" />
+              <span className="text-xs font-bold font-mono uppercase tracking-wider text-[#1E1611]">
+                Fail-Closed Execution Flow
+              </span>
             </div>
-
-            <div className="card">
-              <div className="text-xs font-mono mb-2" style={{ color: "var(--text-muted)" }}>// AI Safety Architecture</div>
-              <div className="font-mono text-xs space-y-1" style={{ color: "var(--text-secondary)" }}>
-                <div><span style={{ color: "#818cf8" }}>LLM output</span> → Structured validation</div>
-                <div className="pl-4">→ Business rules</div>
-                <div className="pl-4">→ Risk engine</div>
-                <div className="pl-4">→ Permission engine</div>
-                <div className="pl-4">→ Transaction simulation</div>
-                <div className="pl-4">→ <span className="text-green-400">Execution</span></div>
-                <div className="mt-2 text-red-400">// Never: LLM → Private key → Blockchain</div>
-              </div>
+            <div className="space-y-2 font-mono text-xs text-[#5E5045]">
+              <div className="p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4]">1. User Intent (WhatsApp) → Structured Parameters</div>
+              <div className="p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4]">2. Multi-Agent Swarm → Consensus Alpha Score</div>
+              <div className="p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4]">3. Chainlink CRE TEE → Policy &amp; Limit Checks</div>
+              <div className="p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4]">4. If limit exceeded → Ledger Challenge Prompt</div>
+              <div className="p-2 rounded bg-[#EFEBE1] border border-[#DCD4C4] font-bold text-[#245233]">5. Uniswap v3 Swap → Blockscout Receipt Link</div>
             </div>
           </div>
         </div>
@@ -635,7 +419,7 @@ function SecuritySection() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   return (
-    <main>
+    <main className="min-h-screen bg-[#F7F4EE] text-[#1E1611]">
       <Navbar />
       <HeroSection />
       <WhatsAppDemo />

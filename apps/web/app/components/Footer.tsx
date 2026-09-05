@@ -1,117 +1,123 @@
 "use client";
 
 import Link from "next/link";
-import { Cpu, Shield, Bot, Terminal, ExternalLink } from "lucide-react";
+import { Cpu, Shield } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-800/80 bg-[#06080D] py-12 px-4 sm:px-6 text-slate-400 text-xs">
+    <footer className="border-t-2 border-[#1E1611] bg-[#EFEBE1] py-10 px-4 sm:px-6 text-xs text-[#5E5045]">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-        {/* Col 1: Brand */}
-        <div className="space-y-3">
+        {/* Brand */}
+        <div className="space-y-2.5">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
-              <Cpu size={14} className="text-white" />
+            <div className="w-7 h-7 rounded-md bg-[#1E1611] flex items-center justify-center border-2 border-[#1E1611] shadow-[2px_2px_0px_#7A543A]">
+              <Cpu size={14} className="text-[#F7F4EE]" />
             </div>
-            <span className="font-bold text-base gradient-text">AgentFi</span>
+            <span className="font-extrabold text-base text-[#1E1611] tracking-tight">AgentFi</span>
           </Link>
-          <p className="text-slate-400 leading-relaxed">
-            Your AI agent economy, directly in WhatsApp. Discovers opportunities, coordinates specialized data agents, and executes onchain with fail-closed safety.
+          <p className="text-[#5E5045] leading-relaxed">
+            AI agent economy in WhatsApp. Verified onchain intelligence, automated risk caps, and USDC settlement.
           </p>
           <div className="flex items-center gap-2 pt-1">
-            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px] border border-emerald-500/20">
+            <span className="badge-neutral">
               ETHOnline 2026
             </span>
-            <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono text-[10px] border border-indigo-500/20">
-              ERC-8004 Standard
+            <span className="badge-brand">
+              ERC-8004
             </span>
           </div>
         </div>
 
-        {/* Col 2: Marketplace & Features */}
+        {/* Marketplace */}
         <div>
-          <h4 className="text-white font-semibold text-sm mb-3">Agent Marketplace</h4>
-          <ul className="space-y-2">
+          <h4 className="font-bold text-sm text-[#1E1611] mb-2.5 uppercase tracking-wide text-[11px]">
+            Marketplace
+          </h4>
+          <ul className="space-y-1.5 font-medium">
             <li>
-              <Link href="/marketplace" className="hover:text-white transition">
-                Browse All Agents
+              <Link href="/marketplace" className="hover:text-[#1E1611] hover:underline transition">
+                Browse Agents
               </Link>
             </li>
             <li>
-              <Link href="/packs" className="hover:text-white transition">
-                Pre-Built Agent Packs
+              <Link href="/packs" className="hover:text-[#1E1611] hover:underline transition">
+                Pre-Built Packs
               </Link>
             </li>
             <li>
-              <Link href="/portfolio" className="hover:text-white transition">
-                Portfolio &amp; P&amp;L Tracker
+              <Link href="/portfolio" className="hover:text-[#1E1611] hover:underline transition">
+                Portfolio Tracker
               </Link>
             </li>
             <li>
-              <Link href="/activity" className="hover:text-white transition">
-                Live Activity &amp; Audit Stream
+              <Link href="/activity" className="hover:text-[#1E1611] hover:underline transition">
+                Activity Stream
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* Col 3: Developers & Protocol */}
+        {/* Developers */}
         <div>
-          <h4 className="text-white font-semibold text-sm mb-3">Developers &amp; Protocol</h4>
-          <ul className="space-y-2">
+          <h4 className="font-bold text-sm text-[#1E1611] mb-2.5 uppercase tracking-wide text-[11px]">
+            Developers
+          </h4>
+          <ul className="space-y-1.5 font-medium">
             <li>
-              <Link href="/demo" className="hover:text-white transition">
-                Interactive Demo Playground
+              <Link href="/demo" className="hover:text-[#1E1611] hover:underline transition">
+                Interactive Demo
               </Link>
             </li>
             <li>
-              <Link href="/developer" className="hover:text-white transition">
-                Agent Developer Studio
+              <Link href="/developer" className="hover:text-[#1E1611] hover:underline transition">
+                Developer Studio
               </Link>
             </li>
             <li>
-              <Link href="/docs" className="hover:text-white transition">
-                Technical Documentation
+              <Link href="/docs" className="hover:text-[#1E1611] hover:underline transition">
+                Documentation
               </Link>
             </li>
             <li>
-              <Link href="/admin" className="hover:text-white transition">
-                System Admin &amp; Node Status
+              <Link href="/admin" className="hover:text-[#1E1611] hover:underline transition">
+                System Admin
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* Col 4: Safety & Security */}
+        {/* Security */}
         <div>
-          <h4 className="text-white font-semibold text-sm mb-3">Security &amp; Invariants</h4>
-          <div className="space-y-2 text-slate-500">
+          <h4 className="font-bold text-sm text-[#1E1611] mb-2.5 uppercase tracking-wide text-[11px]">
+            Guardrails
+          </h4>
+          <div className="space-y-1.5 text-[#5E5045] font-medium">
             <div className="flex items-center gap-1.5">
-              <Shield size={12} className="text-emerald-400" />
+              <Shield size={12} className="text-[#245233]" />
               <span>Fail-Closed RiskGuardian</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Shield size={12} className="text-cyan-400" />
+              <Shield size={12} className="text-[#7A543A]" />
               <span>Chainlink CRE TEE Enclave</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Shield size={12} className="text-amber-400" />
-              <span>Ledger Clear-Signing Challenge</span>
+              <Shield size={12} className="text-[#873322]" />
+              <span>Ledger Hardware Approval</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Shield size={12} className="text-indigo-400" />
-              <span>GasRefuel.sol Auto-Sponsorship</span>
+              <Shield size={12} className="text-[#1E1611]" />
+              <span>GasRefuel.sol Sponsorship</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
+      <div className="max-w-7xl mx-auto pt-6 border-t border-[#DCD4C4] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#857467]">
         <div>
-          ⚠️ Paper trading &amp; testnet simulation. AI predictions are probabilistic. All trades guarded by hard limits.
+          Paper trading &amp; testnet simulation. AI predictions are probabilistic. All trades bound to limits.
         </div>
         <div>
-          © 2026 AgentFi Protocol. All rights reserved.
+          © 2026 AgentFi. Built for ETHOnline 2026.
         </div>
       </div>
     </footer>

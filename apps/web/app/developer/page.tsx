@@ -28,147 +28,155 @@ export default function DeveloperPage() {
     setTimeout(() => {
       setPublishing(false);
       setPublished(true);
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="min-h-screen bg-[#08090C] text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F7F4EE] text-[#1E1611] flex flex-col justify-between">
       <AppHeader
         backHref="/"
         backLabel="Home"
         badge={
-          <span className="text-xs px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 font-mono border border-purple-500/20">
-            Developer Portal
+          <span className="text-xs px-2.5 py-1 bg-[#EFEBE1] border-2 border-[#1E1611] font-bold text-[#1E1611]">
+            Developer Studio
           </span>
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 py-10 w-full space-y-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white">Agent Developer Studio</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Build, publish, and monetize AI agents. Receive 97.5% of subscription revenue settled via Arc USDC.
+          <div className="inline-block px-2.5 py-0.5 bg-[#EFEBE1] border-2 border-[#1E1611] text-[11px] font-bold uppercase tracking-wider mb-2">
+            Builder Portal
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-[#1E1611]">
+            Agent Developer Studio
+          </h1>
+          <p className="mt-1 text-sm text-[#4D382C]">
+            Register, manifest, and monetize specialized AI agents with 97.5% revenue splits via Arc USDC.
           </p>
         </div>
 
         {/* Developer Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs text-slate-400 font-medium">Lifetime USDC Earnings</span>
-            <div className="mt-2 text-3xl font-extrabold text-emerald-400">$1,420.50</div>
-            <span className="text-[11px] text-slate-500 mt-1 block">97.5% Developer Split via Arc</span>
+          <div className="p-5 bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D382C] block">Lifetime USDC Earnings</span>
+            <div className="mt-2 text-3xl font-black text-[#4A6B53]">$1,420.50</div>
+            <span className="text-[11px] font-medium text-[#7C6555] mt-1 block">97.5% split via Arc Settlement</span>
           </div>
 
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs text-slate-400 font-medium">Active Subscribers</span>
-            <div className="mt-2 text-3xl font-extrabold text-white">38 Users</div>
-            <span className="text-[11px] text-slate-500 mt-1 block">Across 2 published agents</span>
+          <div className="p-5 bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D382C] block">Active Subscribers</span>
+            <div className="mt-2 text-3xl font-black text-[#1E1611]">38 Users</div>
+            <span className="text-[11px] font-medium text-[#7C6555] mt-1 block">Across 2 published agents</span>
           </div>
 
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <span className="text-xs text-slate-400 font-medium">Average Reputation Score</span>
-            <div className="mt-2 text-3xl font-extrabold text-cyan-400">94 / 100</div>
-            <span className="text-[11px] text-slate-500 mt-1 block">Anti-sybil verifiable reviews</span>
+          <div className="p-5 bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4D382C] block">Reputation Score</span>
+            <div className="mt-2 text-3xl font-black text-[#7A543A]">94 / 100</div>
+            <span className="text-[11px] font-medium text-[#7C6555] mt-1 block">Anti-sybil verified reviews</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Publish Agent Form */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-emerald-400" /> Publish New Agent
-            </h2>
+          <div className="p-6 bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611]">
+            <div className="flex items-center gap-2 pb-3 border-b-2 border-[#1E1611] mb-5">
+              <PlusCircle className="w-5 h-5 text-[#7A543A]" />
+              <h2 className="text-base font-black text-[#1E1611]">Publish Agent</h2>
+            </div>
 
             {published ? (
-              <div className="p-6 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-center space-y-3">
-                <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
-                <h3 className="text-base font-bold text-white">Agent Published & Registered on ENS!</h3>
-                <p className="text-xs text-slate-300">
+              <div className="p-6 bg-[#EFEBE1] border-2 border-[#1E1611] text-center space-y-3">
+                <CheckCircle className="w-8 h-8 text-[#4A6B53] mx-auto" />
+                <h3 className="text-sm font-black text-[#1E1611]">Agent Registered on ENS</h3>
+                <p className="text-xs text-[#4D382C]">
                   Bound to <strong>{form.slug || "myagent"}.agentfi.eth</strong>. Available for WhatsApp discovery.
                 </p>
                 <button
                   onClick={() => setPublished(false)}
-                  className="px-4 py-2 bg-slate-800 rounded-lg text-xs font-semibold text-white mt-2"
+                  className="px-4 py-2 bg-[#7A543A] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider border-2 border-[#1E1611] shadow-[2px_2px_0px_#1E1611]"
                 >
-                  Publish Another Agent
+                  Publish Another
                 </button>
               </div>
             ) : (
               <form onSubmit={handlePublish} className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Agent Name</label>
+                  <label className="text-xs font-black uppercase text-[#1E1611] block mb-1">Agent Name</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. YieldHunter Pro"
+                    placeholder="YieldHunter Pro"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-[#F7F4EE] border-2 border-[#1E1611] text-xs font-bold text-[#1E1611] focus:outline-none"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">ENS Subname</label>
-                    <div className="flex items-center rounded-xl bg-slate-950 border border-slate-800 px-3">
+                    <label className="text-xs font-black uppercase text-[#1E1611] block mb-1">ENS Subname</label>
+                    <div className="flex items-center bg-[#F7F4EE] border-2 border-[#1E1611] px-2.5">
                       <input
                         type="text"
                         required
                         placeholder="yieldhunter"
                         value={form.slug}
                         onChange={e => setForm({ ...form, slug: e.target.value })}
-                        className="w-full py-2.5 bg-transparent text-sm text-white focus:outline-none"
+                        className="w-full py-2 bg-transparent text-xs font-bold text-[#1E1611] focus:outline-none"
                       />
-                      <span className="text-xs text-slate-500 font-mono">.agentfi.eth</span>
+                      <span className="text-[10px] text-[#7C6555] font-mono font-bold">.agentfi.eth</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">Monthly Price (USDC)</label>
+                    <label className="text-xs font-black uppercase text-[#1E1611] block mb-1">Price (USDC/mo)</label>
                     <input
                       type="number"
                       step="0.5"
                       required
                       value={form.priceMonthly}
                       onChange={e => setForm({ ...form, priceMonthly: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full px-3 py-2 bg-[#F7F4EE] border-2 border-[#1E1611] text-xs font-bold text-[#1E1611] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Description & Capabilities</label>
+                  <label className="text-xs font-black uppercase text-[#1E1611] block mb-1">Capabilities Description</label>
                   <textarea
                     rows={3}
                     required
-                    placeholder="Describe how your agent analyzes or executes trades..."
+                    placeholder="Describe how your agent analyzes or executes..."
                     value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-[#F7F4EE] border-2 border-[#1E1611] text-xs text-[#1E1611] focus:outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={publishing}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold text-sm transition"
+                  className="w-full py-2.5 px-4 bg-[#7A543A] hover:bg-[#63412B] text-[#FFFFFF] font-black text-xs uppercase tracking-wider border-2 border-[#1E1611] shadow-[3px_3px_0px_#1E1611] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 >
-                  {publishing ? "Registering on ENS & Uploading Manifest..." : "Publish to Marketplace"}
+                  {publishing ? "Registering on ENS..." : "Publish to Marketplace"}
                 </button>
               </form>
             )}
           </div>
 
           {/* Machine-Readable Manifest Preview */}
-          <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-              <span className="text-slate-400 font-sans font-bold flex items-center gap-2">
-                <Code className="w-4 h-4 text-emerald-400" /> Machine-Readable Agent Manifest
+          <div className="p-6 bg-[#FFFFFF] border-2 border-[#1E1611] shadow-[4px_4px_0px_#1E1611] font-mono text-xs">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E1611] mb-4">
+              <span className="font-sans font-black text-sm text-[#1E1611] flex items-center gap-2">
+                <Code className="w-4 h-4 text-[#7A543A]" /> Agent Manifest
               </span>
-              <span className="text-[10px] text-slate-500">ERC-8004 Standard</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#EFEBE1] border border-[#1E1611] text-[#1E1611]">
+                ERC-8004
+              </span>
             </div>
 
-            <pre className="text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+            <pre className="bg-[#F7F4EE] p-3 border-2 border-[#1E1611] text-[#1E1611] overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-[360px]">
 {JSON.stringify({
   name: form.name || "WhaleWatcher Pro",
   ens_name: `${form.slug || "whalewatcher"}.agentfi.eth`,
@@ -193,6 +201,7 @@ export default function DeveloperPage() {
           </div>
         </div>
       </main>
+
       <UniversalFooter />
     </div>
   );
