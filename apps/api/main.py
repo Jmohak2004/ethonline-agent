@@ -8,7 +8,7 @@ import structlog
 
 from config import settings
 from database import init_db, close_db
-from routers import auth, agents, health
+from routers import auth, agents, health, demo
 from routers.stubs import (
     users, marketplace, subscriptions, portfolio, signals, trades, permissions
 )
@@ -52,3 +52,4 @@ app.include_router(portfolio, prefix="/portfolio", tags=["portfolio"])
 app.include_router(signals, prefix="/signals", tags=["signals"])
 app.include_router(trades, prefix="/trades", tags=["trades"])
 app.include_router(permissions, prefix="/permissions", tags=["permissions"])
+app.include_router(demo.router)
