@@ -8,8 +8,8 @@ import structlog
 
 from config import settings
 from database import init_db, close_db
-from routers import auth, agents, health, demo
-from routers.stubs import (
+from routers import (
+    auth, agents, health, demo,
     users, marketplace, subscriptions, portfolio, signals, trades, permissions
 )
 
@@ -44,12 +44,12 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(users, prefix="/users", tags=["users"])
+app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(agents.router, prefix="/agents", tags=["agents"])
-app.include_router(marketplace, prefix="/marketplace", tags=["marketplace"])
-app.include_router(subscriptions, prefix="/subscriptions", tags=["subscriptions"])
-app.include_router(portfolio, prefix="/portfolio", tags=["portfolio"])
-app.include_router(signals, prefix="/signals", tags=["signals"])
-app.include_router(trades, prefix="/trades", tags=["trades"])
-app.include_router(permissions, prefix="/permissions", tags=["permissions"])
+app.include_router(marketplace.router, prefix="/marketplace", tags=["marketplace"])
+app.include_router(subscriptions.router, prefix="/subscriptions", tags=["subscriptions"])
+app.include_router(portfolio.router, prefix="/portfolio", tags=["portfolio"])
+app.include_router(signals.router, prefix="/signals", tags=["signals"])
+app.include_router(trades.router, prefix="/trades", tags=["trades"])
+app.include_router(permissions.router, prefix="/permissions", tags=["permissions"])
 app.include_router(demo.router)

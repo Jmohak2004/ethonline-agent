@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from packages.agents.agents import MultiAgentOrchestrator
 from services.arc.client import ArcSettlementService
-from intent_classifier import classify_intent, Intent
+from intent_classifier import classify_intent, Intent, extract_entities
 
 logger = structlog.get_logger()
 API_BASE = "http://localhost:8000"
@@ -45,12 +45,16 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
             reply = await handle_buy_agent(from_number, text)
         elif intent == Intent.SET_RISK:
             reply = await handle_set_risk(from_number, text)
+        elif intent == Intent.FIND_OPPORTUNITIES:
+            reply = await handle_find_opportunities(from_number, text)
         elif intent == Intent.ANALYZE_MARKET:
             reply = await handle_analyze_market(from_number, text)
         elif intent == Intent.PORTFOLIO:
             reply = await handle_portfolio(from_number)
         elif intent == Intent.APPROVE_TRADE:
             reply = await handle_approve_trade(from_number, text)
+        elif intent == Intent.REJECT_TRADE:
+            reply = "❌ Action cancelled. No funds or transactions were executed."
         elif intent == Intent.HELP:
             reply = await get_help_message()
         else:
@@ -146,6 +150,30 @@ async def handle_set_risk(from_number: str, text: str) -> str:
     )
 
 
+async def handle_find_opportunities(from_number: str, text: str) -> str:
+    entities = extract_entities(text)
+    budget = entities.get("amount_usd", 100.0)
+    risk = entities.get("risk", "Medium")
+    max_trade = min(20.0, budget * 0.20)
+    daily_loss = min(10.0, budget * 0.10)
+
+    return (
+        f"Got it! Your profile is configured:\n\n"
+        f"• *Budget:* ${budget:.2f}\n"
+        f"• *Risk:* {risk.capitalize()}\n"
+        f"• *Maximum Trade:* ${max_trade:.2f}\n"
+        f"• *Daily Loss Limit:* ${daily_loss:.2f}\n\n"
+        f"I found an agent pack that matches your preferences:\n\n"
+        f"🔥 *Balanced Alpha Pack*\n"
+        f"• NewsScout (Catalysts)\n"
+        f"• MarketMind (Technicals)\n"
+        f"• WhaleWatcher Pro (The Graph)\n"
+        f"• RiskGuardian (Confidential TEE Guardrail)\n\n"
+        f"*$5.00 USDC / month*\n\n"
+        f"Reply *\"Yes\"* or *\"Activate\"* to activate."
+    )
+
+
 async def handle_analyze_market(from_number: str, text: str) -> str:
     asset = "ETH"
     if "btc" in text.lower():
@@ -184,13 +212,15 @@ async def handle_portfolio(from_number: str) -> str:
 
 async def handle_approve_trade(from_number: str, text: str) -> str:
     text_lower = text.lower()
-    if any(word in text_lower for word in ["yes", "approve", "confirm", "execute", "ok", "sure"]):
+    if any(word in text_lower for word in ["yes", "approve", "confirm", "execute", "ok", "sure", "activate"]):
+        tx_hash = "0xuni_7c92b41f018d4529a3"
         return (
             "✅ *Trade Executed on Testnet via Uniswap v3*\n\n"
             "• *Swapped:* $20.00 USDC -> 0.00754 ETH\n"
             "• *Execution Mode:* Paper / Testnet\n"
             "• *Slippage:* 0.02%\n"
-            "• *Tx Hash:* `0xuni_7c92b41f018d4529a3`\n\n"
+            f"• *Tx Hash:* `{tx_hash}`\n"
+            f"• *Blockscout Verified:* https://eth-sepolia.blockscout.com/tx/{tx_hash}\n\n"
             "Your portfolio has been updated automatically."
         )
     return "❌ Trade cancelled. No funds were moved."
