@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot, TrendingUp, Shield, Zap, ChevronRight, Star, Users,
   MessageCircle, Wallet, BarChart2, Globe, Lock, ArrowRight,
-  Activity, Cpu, DollarSign
+  Activity, Cpu, DollarSign, Menu, X, Boxes
 } from "lucide-react";
+import UniversalFooter from "@/app/components/Footer";
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const DEMO_AGENTS = [
@@ -48,11 +49,23 @@ const INTEGRATIONS = [
 // ── Components ────────────────────────────────────────────────────────────────
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  const navLinks = [
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "Packs", href: "/packs" },
+    { label: "Portfolio", href: "/portfolio" },
+    { label: "Activity", href: "/activity" },
+    { label: "Demo", href: "/demo" },
+    { label: "Developer", href: "/developer" },
+    { label: "Docs", href: "/docs" }
+  ];
 
   return (
     <nav
@@ -61,21 +74,21 @@ function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
             <Cpu size={16} className="text-white" />
           </div>
           <span className="text-xl font-bold gradient-text">AgentFi</span>
-        </div>
+        </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          {["Marketplace", "Portfolio", "Developer", "Docs"].map((item) => (
+          {navLinks.map((item) => (
             <Link
-              key={item}
-              href={`/${item.toLowerCase()}`}
+              key={item.label}
+              href={item.href}
               className="btn-ghost text-sm"
             >
-              {item}
+              {item.label}
             </Link>
           ))}
         </div>
@@ -84,11 +97,52 @@ function Navbar() {
           <Link href="/marketplace" className="btn-secondary text-sm hidden sm:flex">
             Browse Agents
           </Link>
-          <Link href="/app" className="btn-primary text-sm">
-            Launch App <ArrowRight size={14} />
+          <Link href="/demo" className="btn-primary text-sm hidden sm:flex">
+            Launch Demo <ArrowRight size={14} />
           </Link>
+
+          {/* Mobile hamburger button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white bg-slate-900 border border-slate-800"
+            aria-label="Toggle navigation"
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-800 bg-[#0B0D13]/95 backdrop-blur-xl px-6 py-4 space-y-2 shadow-2xl mt-3">
+          {navLinks.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/50"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="pt-2 border-t border-slate-800 flex gap-2">
+            <Link
+              href="/marketplace"
+              onClick={() => setMobileMenuOpen(false)}
+              className="btn-secondary text-xs flex-1 text-center py-2"
+            >
+              Marketplace
+            </Link>
+            <Link
+              href="/demo"
+              onClick={() => setMobileMenuOpen(false)}
+              className="btn-primary text-xs flex-1 text-center py-2"
+            >
+              Demo
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
@@ -165,9 +219,9 @@ function HeroSection() {
             <Bot size={18} />
             Explore Agent Marketplace
           </Link>
-          <Link href="#demo" className="btn-secondary text-base px-7 py-3.5">
+          <Link href="/demo" className="btn-secondary text-base px-7 py-3.5">
             <MessageCircle size={18} />
-            See Live Demo
+            Try Live Interactive Demo
           </Link>
         </motion.div>
 
@@ -346,7 +400,7 @@ function AgentMarketplace() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
             >
-              <Link href={`/marketplace/${agent.name.toLowerCase()}`}>
+              <Link href={`/agents/${agent.name.toLowerCase()}`}>
                 <div className="agent-card group">
                   {agent.trending && (
                     <div className="absolute top-4 right-4">
@@ -420,9 +474,9 @@ function AgentMarketplace() {
                         <span className="font-bold">${agent.price}<span className="text-xs font-normal ml-0.5" style={{ color: "var(--text-muted)" }}>/mo</span></span>
                       )}
                     </div>
-                    <button className="btn-primary text-xs py-1.5 px-4 group-hover:shadow-lg transition-shadow">
+                    <span className="btn-primary text-xs py-1.5 px-4 group-hover:shadow-lg transition-shadow inline-block">
                       Subscribe
-                    </button>
+                    </span>
                   </div>
                 </div>
               </Link>
@@ -578,30 +632,6 @@ function SecuritySection() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="py-16 px-6" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-              <Cpu size={16} className="text-white" />
-            </div>
-            <span className="font-bold gradient-text">AgentFi</span>
-          </div>
-          <div className="text-sm text-center" style={{ color: "var(--text-muted)" }}>
-            ⚠️ Paper trading only. AI predictions are uncertain. Past performance doesn't guarantee future results.
-            This is an ETHOnline 2026 hackathon project.
-          </div>
-          <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-            © 2026 AgentFi
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   return (
@@ -612,7 +642,7 @@ export default function HomePage() {
       <AgentMarketplace />
       <TechStack />
       <SecuritySection />
-      <Footer />
+      <UniversalFooter />
     </main>
   );
 }

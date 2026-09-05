@@ -8,8 +8,56 @@ import {
   Bot, Star, Users, Shield, ArrowLeft, CheckCircle,
   ExternalLink, Zap, Lock, Activity, TrendingUp, AlertTriangle, MessageSquare
 } from "lucide-react";
+import AppHeader from "@/app/components/AppHeader";
+import UniversalFooter from "@/app/components/Footer";
 
 const AGENT_DATA: Record<string, any> = {
+  "whalewatcher": {
+    id: "whalewatcher",
+    name: "WhaleWatcher Pro",
+    ensName: "whalewatcher.agentfi.eth",
+    category: "ONCHAIN",
+    description: "Detects large whale transactions, exchange reserve shifts, and liquidity movements across decentralized protocols.",
+    longDescription: "WhaleWatcher Pro connects directly to The Graph decentralized subgraphs and real-time mempool monitors. When large wallets transfer funds or liquidity pools experience sudden depth shifts, WhaleWatcher scores the activity into ACCUMULATION or DISTRIBUTION signals with full cryptographic evidence.",
+    developer: "0x71C...49bE (Verified Developer)",
+    version: "1.2.0",
+    rating: 4.8,
+    ratingCount: 142,
+    activeUsers: 2340,
+    priceMonthly: 3.0,
+    pricePerQuery: 0.02,
+    riskLevel: "MEDIUM",
+    performanceScore: 94,
+    maxDrawdown: "-7.1%",
+    historicalPnl: "+18.4%",
+    capabilities: [
+      "The Graph Subgraph Querying",
+      "Whale Net Flow Tracking",
+      "DEX Liquidity Depth Profiling",
+      "Hedera x402 Micropayment API"
+    ],
+    requiredPermissions: [
+      { name: "Read Onchain Blockchain Data", granted: true },
+      { name: "Analyze Portfolio Exposure", granted: true },
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true },
+      { name: "Change Security Permissions", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Alex M. (+1 415***89)",
+        rating: 5,
+        date: "2 days ago",
+        comment: "Caught the ETH accumulation 4 hours before the spike. Super clean signals sent right to my WhatsApp!"
+      },
+      {
+        user: "Sarah K. (+44 79***12)",
+        rating: 5,
+        date: "1 week ago",
+        comment: "Love the fail-closed protection. WhaleWatcher collaborated with RiskGuardian without any hiccups."
+      }
+    ]
+  },
   "whalewatcher-pro": {
     id: "whalewatcher-pro",
     name: "WhaleWatcher Pro",
@@ -55,13 +103,389 @@ const AGENT_DATA: Record<string, any> = {
         comment: "Love the fail-closed protection. WhaleWatcher collaborated with RiskGuardian without any hiccups."
       }
     ]
+  },
+  "newsscout": {
+    id: "newsscout",
+    name: "NewsScout",
+    ensName: "newsscout.agentfi.eth",
+    category: "NEWS",
+    description: "Monitors breaking protocol governance, Layer 2 throughput milestones, and market-moving catalysts.",
+    longDescription: "NewsScout aggregates institutional feeds, developer commits, and protocol announcements in real-time. It filters noise from actionable alpha, outputting positive or negative confidence ratings before narrative trends reach mainstream social media.",
+    developer: "0x89A...12cF (Verified Developer)",
+    version: "1.0.4",
+    rating: 4.9,
+    ratingCount: 204,
+    activeUsers: 3120,
+    priceMonthly: 0.0,
+    pricePerQuery: 0.0,
+    riskLevel: "LOW",
+    performanceScore: 88,
+    maxDrawdown: "-3.1%",
+    historicalPnl: "+8.2%",
+    capabilities: [
+      "Protocol Announcement Feed Filtering",
+      "Governance Catalyst Tracking",
+      "NLP Sentiment Scoring"
+    ],
+    requiredPermissions: [
+      { name: "Read Market News Feeds", granted: true },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Elena R. (+33 61***45)",
+        rating: 5,
+        date: "3 days ago",
+        comment: "Instant alerts on WhatsApp when Layer-2 throughput broke record highs."
+      }
+    ]
+  },
+  "marketmind": {
+    id: "marketmind",
+    name: "MarketMind",
+    ensName: "marketmind.agentfi.eth",
+    category: "TRADING",
+    description: "Calculates multi-timeframe RSI, MACD golden crosses, and momentum trends.",
+    longDescription: "MarketMind computes technical indicators over multiple timeframes to distinguish genuine breakout momentum from low-volume range traps. Never claims guaranteed predictions, but provides probabilistic trend ratings with explainable indicator values.",
+    developer: "0x33B...87a1 (Verified Developer)",
+    version: "2.1.0",
+    rating: 4.7,
+    ratingCount: 118,
+    activeUsers: 1890,
+    priceMonthly: 3.0,
+    pricePerQuery: 0.02,
+    riskLevel: "MEDIUM",
+    performanceScore: 91,
+    maxDrawdown: "-9.2%",
+    historicalPnl: "+15.6%",
+    capabilities: [
+      "Multi-Timeframe RSI Calculation",
+      "MACD & EMA Momentum Profiling",
+      "Support & Resistance Range Finding"
+    ],
+    requiredPermissions: [
+      { name: "Analyze Historical Price Charts", granted: true },
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "David L. (+1 312***90)",
+        rating: 5,
+        date: "4 days ago",
+        comment: "The RSI + EMA golden cross trigger is remarkably accurate when paired with WhaleWatcher."
+      }
+    ]
+  },
+  "sentimentagent": {
+    id: "sentimentagent",
+    name: "SentimentAgent",
+    ensName: "sentiment.agentfi.eth",
+    category: "SENTIMENT",
+    description: "Tracks social volume momentum, narrative shifts, and community sentiment.",
+    longDescription: "SentimentAgent monitors decentralized social feeds and developer communities to gauge retail crowd momentum and protocol narrative velocity.",
+    developer: "0x55C...33e9 (Verified Developer)",
+    version: "1.1.0",
+    rating: 4.6,
+    ratingCount: 92,
+    activeUsers: 1450,
+    priceMonthly: 2.0,
+    pricePerQuery: 0.01,
+    riskLevel: "MEDIUM",
+    performanceScore: 86,
+    maxDrawdown: "-4.5%",
+    historicalPnl: "+9.4%",
+    capabilities: [
+      "Social Volume Spike Detection",
+      "Narrative Acceleration Profiling"
+    ],
+    requiredPermissions: [
+      { name: "Read Public Social Alpha", granted: true },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Tobi B. (+234 80***77)",
+        rating: 5,
+        date: "5 days ago",
+        comment: "Great at spotting early organic momentum before coins trend on Twitter."
+      }
+    ]
+  },
+  "sentiment-agent": {
+    id: "sentiment-agent",
+    name: "SentimentAgent",
+    ensName: "sentiment.agentfi.eth",
+    category: "SENTIMENT",
+    description: "Tracks social volume momentum, narrative shifts, and community sentiment.",
+    longDescription: "SentimentAgent monitors decentralized social feeds and developer communities to gauge retail crowd momentum and protocol narrative velocity.",
+    developer: "0x55C...33e9 (Verified Developer)",
+    version: "1.1.0",
+    rating: 4.6,
+    ratingCount: 92,
+    activeUsers: 1450,
+    priceMonthly: 2.0,
+    pricePerQuery: 0.01,
+    riskLevel: "MEDIUM",
+    performanceScore: 86,
+    maxDrawdown: "-4.5%",
+    historicalPnl: "+9.4%",
+    capabilities: [
+      "Social Volume Spike Detection",
+      "Narrative Acceleration Profiling"
+    ],
+    requiredPermissions: [
+      { name: "Read Public Social Alpha", granted: true },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Tobi B. (+234 80***77)",
+        rating: 5,
+        date: "5 days ago",
+        comment: "Great at spotting early organic momentum before coins trend on Twitter."
+      }
+    ]
+  },
+  "riskguardian": {
+    id: "riskguardian",
+    name: "RiskGuardian",
+    ensName: "riskguardian.agentfi.eth",
+    category: "RISK",
+    description: "Strict Chainlink CRE confidential TEE risk engine with fail-closed financial guardrails.",
+    longDescription: "RiskGuardian is the mandatory safety gatekeeper of AgentFi. No trade can ever execute without passing RiskGuardian's confidential checks. It verifies max trade limits, portfolio exposure, daily loss thresholds, and triggers Ledger hardware clear-signing whenever limits are exceeded.",
+    developer: "0xAgentFiProtocol (Core Governance)",
+    version: "3.0.0",
+    rating: 5.0,
+    ratingCount: 380,
+    activeUsers: 4890,
+    priceMonthly: 0.0,
+    pricePerQuery: 0.0,
+    riskLevel: "LOW",
+    performanceScore: 99,
+    maxDrawdown: "0.0%",
+    historicalPnl: "Protected $12K+",
+    capabilities: [
+      "Chainlink CRE TEE Confidential Enclave",
+      "Fail-Closed Financial Safety",
+      "Ledger Clear-Signing Challenge Generation"
+    ],
+    requiredPermissions: [
+      { name: "Enforce Hard Spending Limits", granted: true },
+      { name: "Halt Trades Over Threshold", granted: true },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Marcus V. (+49 151***23)",
+        rating: 5,
+        date: "1 day ago",
+        comment: "Saved me from an unauthorized trade by requiring WhatsApp approval. Top-tier security."
+      }
+    ]
+  },
+  "executionagent": {
+    id: "executionagent",
+    name: "ExecutionAgent",
+    ensName: "execution.agentfi.eth",
+    category: "TRADING",
+    description: "Uniswap v3 automated swap router with strict slippage protection and gas refuel.",
+    longDescription: "ExecutionAgent executes trades on Uniswap v3 on Ethereum Sepolia, Base Sepolia, and Arbitrum. It operates under strict session keys, verifies slippage, and coordinates with GasRefuel.sol to ensure zero out-of-gas errors.",
+    developer: "0xAgentFiProtocol (Core Infrastructure)",
+    version: "2.0.0",
+    rating: 4.9,
+    ratingCount: 165,
+    activeUsers: 2100,
+    priceMonthly: 0.0,
+    pricePerQuery: 0.0,
+    riskLevel: "MEDIUM",
+    performanceScore: 96,
+    maxDrawdown: "-5.0%",
+    historicalPnl: "+18.1%",
+    capabilities: [
+      "Uniswap v3 Universal Router & SwapRouter02",
+      "Max 0.5% Slippage Guardrail",
+      "GasRefuel.sol Auto-Sponsorship"
+    ],
+    requiredPermissions: [
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Kenji T. (+81 90***11)",
+        rating: 5,
+        date: "2 days ago",
+        comment: "Fast testnet execution, and the Blockscout receipt link right in WhatsApp is awesome."
+      }
+    ]
+  },
+  "execution-agent": {
+    id: "execution-agent",
+    name: "ExecutionAgent",
+    ensName: "execution.agentfi.eth",
+    category: "TRADING",
+    description: "Uniswap v3 automated swap router with strict slippage protection and gas refuel.",
+    longDescription: "ExecutionAgent executes trades on Uniswap v3 on Ethereum Sepolia, Base Sepolia, and Arbitrum. It operates under strict session keys, verifies slippage, and coordinates with GasRefuel.sol to ensure zero out-of-gas errors.",
+    developer: "0xAgentFiProtocol (Core Infrastructure)",
+    version: "2.0.0",
+    rating: 4.9,
+    ratingCount: 165,
+    activeUsers: 2100,
+    priceMonthly: 0.0,
+    pricePerQuery: 0.0,
+    riskLevel: "MEDIUM",
+    performanceScore: 96,
+    maxDrawdown: "-5.0%",
+    historicalPnl: "+18.1%",
+    capabilities: [
+      "Uniswap v3 Universal Router & SwapRouter02",
+      "Max 0.5% Slippage Guardrail",
+      "GasRefuel.sol Auto-Sponsorship"
+    ],
+    requiredPermissions: [
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Kenji T. (+81 90***11)",
+        rating: 5,
+        date: "2 days ago",
+        comment: "Fast testnet execution, and the Blockscout receipt link right in WhatsApp is awesome."
+      }
+    ]
+  },
+  "chainwhale": {
+    id: "chainwhale",
+    name: "ChainWhale",
+    ensName: "chainwhale.agentfi.eth",
+    category: "ONCHAIN",
+    description: "Affordable pay-per-use whale tracking. Query whale positions for specific assets on demand.",
+    longDescription: "ChainWhale provides on-demand queries for large wallet flows and DEX liquidity shifts. Instead of a recurring monthly subscription, pay only 0.25 HBAR ($0.02) or 2 USDC per deep onchain query.",
+    developer: "0x34A...12dE (Verified Developer)",
+    version: "1.1.0",
+    rating: 4.6,
+    ratingCount: 88,
+    activeUsers: 870,
+    priceMonthly: 2.0,
+    pricePerQuery: 0.02,
+    riskLevel: "MEDIUM",
+    performanceScore: 89,
+    maxDrawdown: "-5.1%",
+    historicalPnl: "+9.4%",
+    capabilities: [
+      "On-Demand Whale Tracking",
+      "Pay-Per-Use Hedera x402 Channels",
+      "DEX Liquidity Depth Profiling"
+    ],
+    requiredPermissions: [
+      { name: "Read Onchain Blockchain Data", granted: true },
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "David L. (+1 312***44)",
+        rating: 5,
+        date: "5 days ago",
+        comment: "Great for quick spot checks without paying a full monthly fee."
+      }
+    ]
+  },
+  "alphawhale": {
+    id: "alphawhale",
+    name: "AlphaWhale",
+    ensName: "alphawhale.agentfi.eth",
+    category: "ONCHAIN",
+    description: "Real-time micro-whale accumulation signals with instant push alerts.",
+    longDescription: "AlphaWhale monitors high-velocity accumulation from sub-whale tier wallets (100-1,000 ETH). Gives traders an edge before mega-whales appear in headlines.",
+    developer: "0x98F...77bA (Verified Developer)",
+    version: "1.0.4",
+    rating: 4.4,
+    ratingCount: 52,
+    activeUsers: 450,
+    priceMonthly: 1.5,
+    pricePerQuery: 0.02,
+    riskLevel: "LOW",
+    performanceScore: 86,
+    maxDrawdown: "-3.8%",
+    historicalPnl: "+7.1%",
+    capabilities: [
+      "Micro-Whale Tracking",
+      "Fast Mempool Detection",
+      "Telegram & WhatsApp Push Alerts"
+    ],
+    requiredPermissions: [
+      { name: "Read Onchain Blockchain Data", granted: true },
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Elena R. (+49 15***90)",
+        rating: 4,
+        date: "1 week ago",
+        comment: "Very quick alerts on Arbitrum and Base."
+      }
+    ]
   }
 };
 
+function getAgentData(rawId: string) {
+  const agentKey = (rawId || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  if (AGENT_DATA[agentKey]) return AGENT_DATA[agentKey];
+
+  const formattedName = agentKey
+    ? agentKey.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+    : "Autonomous Agent";
+
+  return {
+    id: agentKey || "custom-agent",
+    name: formattedName,
+    ensName: `${agentKey || "custom"}.agentfi.eth`,
+    category: "ONCHAIN",
+    description: "Specialized AI agent operating within the AgentFi verifiable economy.",
+    longDescription: `${formattedName} is an active AI agent registered on the AgentFi smart contract registry. It communicates via Hedera x402 micropayment channels and operates strictly under the RiskGuardian fail-closed safety invariant.`,
+    developer: "0x71C...49bE (Verified Developer)",
+    version: "1.0.0",
+    rating: 4.8,
+    ratingCount: 42,
+    activeUsers: 950,
+    priceMonthly: 3.0,
+    pricePerQuery: 0.02,
+    riskLevel: "MEDIUM",
+    performanceScore: 91,
+    maxDrawdown: "-5.0%",
+    historicalPnl: "+12.0%",
+    capabilities: [
+      "Onchain Subgraph Data Intelligence",
+      "Hedera x402 Micropayments",
+      "RiskGuardian Guardrail Compliance",
+      "WhatsApp Command Routing"
+    ],
+    requiredPermissions: [
+      { name: "Read Onchain Blockchain Data", granted: true },
+      { name: "Analyze Portfolio Exposure", granted: true },
+      { name: "Execute Swaps via RiskGuardian", granted: true, limit: "Max $20/trade" },
+      { name: "Withdraw Funds", granted: false, blocked: true },
+      { name: "Change Security Permissions", granted: false, blocked: true }
+    ],
+    reviews: [
+      {
+        user: "Verified Tester (+1 415***88)",
+        rating: 5,
+        date: "Just now",
+        comment: "Autonomous signals and risk limits working seamlessly."
+      }
+    ]
+  };
+}
+
 export default function AgentDetailPage() {
   const params = useParams();
-  const agentId = (params?.id as string) || "whalewatcher-pro";
-  const agent = AGENT_DATA[agentId] || AGENT_DATA["whalewatcher-pro"];
+  const rawId = (params?.id as string) || "whalewatcher-pro";
+  const agent = getAgentData(rawId);
 
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -77,19 +501,15 @@ export default function AgentDetailPage() {
   return (
     <div className="min-h-screen bg-[#08090C] text-slate-100 selection:bg-emerald-500/30">
       {/* Header */}
-      <header className="border-b border-slate-800/80 bg-[#0B0D13]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/marketplace" className="flex items-center gap-2 text-slate-400 hover:text-white transition">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Marketplace</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">
-              ENS: {agent.ensName}
-            </span>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        backHref="/marketplace"
+        backLabel="Marketplace"
+        badge={
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">
+            ENS: {agent.ensName}
+          </span>
+        }
+      />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -256,6 +676,7 @@ export default function AgentDetailPage() {
           </div>
         </div>
       </main>
+      <UniversalFooter />
     </div>
   );
 }

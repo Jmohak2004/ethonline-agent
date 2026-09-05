@@ -7,6 +7,8 @@ import {
   Bot, Star, Users, Filter, Search, TrendingUp, Shield,
   ChevronRight, Zap, BarChart2, Globe, Cpu, ArrowLeft
 } from "lucide-react";
+import AppHeader from "@/app/components/AppHeader";
+import UniversalFooter from "@/app/components/Footer";
 
 const CATEGORIES = ["ALL", "TRADING", "NEWS", "RESEARCH", "SENTIMENT", "ONCHAIN", "RISK", "AUTOMATION"];
 
@@ -228,37 +230,30 @@ export default function MarketplacePage() {
   return (
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
       {/* Header */}
-      <div className="sticky top-0 z-40 glass-strong px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="btn-ghost">
-              <ArrowLeft size={16} />
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-                <Cpu size={14} className="text-white" />
-              </div>
-              <span className="font-bold gradient-text">AgentFi</span>
-            </div>
-            <ChevronRight size={14} style={{ color: "var(--text-muted)" }} />
-            <span className="font-semibold text-sm">Marketplace</span>
-          </div>
-          <div className="flex gap-2">
+      <AppHeader
+        backHref="/"
+        backLabel="Home"
+        badge={
+          <div className="flex gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => setView("agents")}
-              className={view === "agents" ? "btn-primary text-xs py-1.5 px-3" : "btn-ghost text-xs"}
+              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-lg transition ${
+                view === "agents" ? "bg-indigo-600 text-white font-semibold shadow-sm" : "text-slate-400 hover:text-white"
+              }`}
             >
               <Bot size={12} /> Agents
             </button>
             <button
               onClick={() => setView("packs")}
-              className={view === "packs" ? "btn-primary text-xs py-1.5 px-3" : "btn-ghost text-xs"}
+              className={`flex items-center gap-1 text-xs py-1 px-3 rounded-lg transition ${
+                view === "packs" ? "bg-indigo-600 text-white font-semibold shadow-sm" : "text-slate-400 hover:text-white"
+              }`}
             >
               <Zap size={12} /> Packs
             </button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Page title */}
@@ -325,7 +320,7 @@ export default function MarketplacePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: i * 0.05 }}
                 >
-                  <Link href={`/marketplace/${agent.id}`}>
+                  <Link href={`/agents/${agent.id}`}>
                     <div className="agent-card group h-full flex flex-col">
                       {/* Badges */}
                       <div className="absolute top-4 right-4 flex gap-1">
@@ -407,9 +402,9 @@ export default function MarketplacePage() {
                           <Users size={10} />
                           {(agent.users / 1000).toFixed(1)}K
                         </div>
-                        <button className="btn-primary text-xs py-1.5 px-3">
+                        <span className="btn-primary text-xs py-1.5 px-3 inline-block">
                           Subscribe
-                        </button>
+                        </span>
                       </div>
                     </div>
                   </Link>
@@ -458,13 +453,16 @@ export default function MarketplacePage() {
                     </div>
                     <div className="font-bold text-xl">${pack.price}<span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>/mo</span></div>
                   </div>
-                  <button className="btn-primary text-sm">Get Pack</button>
+                  <Link href="/packs" className="btn-primary text-sm inline-block">
+                    Get Pack
+                  </Link>
                 </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
+      <UniversalFooter />
     </div>
   );
 }

@@ -6,6 +6,8 @@ import {
   Code, ArrowLeft, Bot, PlusCircle, CheckCircle,
   DollarSign, Star, Users, ExternalLink, Globe, Upload
 } from "lucide-react";
+import AppHeader from "@/app/components/AppHeader";
+import UniversalFooter from "@/app/components/Footer";
 
 export default function DeveloperPage() {
   const [publishing, setPublishing] = useState(false);
@@ -30,20 +32,16 @@ export default function DeveloperPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090C] text-slate-100">
-      <header className="border-b border-slate-800/80 bg-[#0B0D13]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Home</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 font-mono border border-purple-500/20">
-              Developer Portal
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#08090C] text-slate-100 flex flex-col justify-between">
+      <AppHeader
+        backHref="/"
+        backLabel="Home"
+        badge={
+          <span className="text-xs px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 font-mono border border-purple-500/20">
+            Developer Portal
+          </span>
+        }
+      />
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
         <div>
@@ -195,6 +193,7 @@ export default function DeveloperPage() {
           </div>
         </div>
       </main>
+      <UniversalFooter />
     </div>
   );
 }
