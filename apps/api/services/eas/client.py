@@ -92,7 +92,7 @@ class EASClient:
             }
 
         try:
-            acct = vault_service.get_account_from_encrypted_key(sponsor_key)
+            acct = self.w3.eth.account.from_key(sponsor_key)
             eas_contract = self.w3.eth.contract(address=Web3.to_checksum_address(self.eas_address), abi=EAS_ABI)
             
             # Encode data: string agent_slug, string asset, string recommendation, uint256 confidence (scaled by 100)

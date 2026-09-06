@@ -59,7 +59,7 @@ async def get_or_create_user(from_number: str) -> Tuple[User, RiskProfile]:
         user = res.scalar_one_or_none()
 
         if not user:
-            address, enc_key = vault_service.create_wallet()
+            address, enc_key = await vault_service.create_wallet()
             user = User(
                 whatsapp_number=from_number,
                 display_name=f"User {from_number[-4:]}",
@@ -92,7 +92,7 @@ async def get_or_create_user(from_number: str) -> Tuple[User, RiskProfile]:
 
         # User exists, ensure wallet is set
         if not user.wallet_address or not user.encrypted_private_key:
-            address, enc_key = vault_service.create_wallet()
+            address, enc_key = await vault_service.create_wallet()
             user.wallet_address = address
             user.encrypted_private_key = enc_key
             await session.commit()

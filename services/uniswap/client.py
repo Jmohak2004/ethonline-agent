@@ -304,27 +304,26 @@ class UniswapService:
                     ),
                 }
 
-            # If user has funds and encrypted key is provided -> broadcast real transaction
-            if encrypted_private_key and self.w3 and self.w3.is_connected():
+            # If user has funds and encrypted key is provided -> broadcast real transaction via CDP
+            if encrypted_private_key:
                 try:
-                    acct = vault_service.get_account_from_encrypted_key(encrypted_private_key)
-                    nonce = self.w3.eth.get_transaction_count(acct.address)
-                    gas_price = self.w3.eth.gas_price
+                    from cdp import TransactionRequestEIP1559
+                    cdp_account = await vault_service.get_cdp_account(recipient_wallet)
 
-                    tx = {
-                        "from": acct.address,
+                    tx_req = {
                         "to": Web3.to_checksum_address(self.router_address),
                         "data": calldata,
                         "gas": 250_000,
-                        "gasPrice": gas_price,
-                        "nonce": nonce,
                         "chainId": NETWORKS.get(self.network, NETWORKS["base"])["chain_id"],
                         "value": 0 if token_in.upper() != "ETH" else amount_in_units,
                     }
 
-                    signed = acct.sign_transaction(tx)
-                    raw_tx = self.w3.eth.send_raw_transaction(signed.raw_transaction)
-                    tx_hash = raw_tx.hex()
+                    # CDP handles nonce and gas pricing natively!
+                    tx_hash = await cdp_account.send_transaction(
+                        transaction=TransactionRequestEIP1559(**tx_req),
+                        network=self.network
+                    )
+                    
                     explorer_url = f"{self.explorer}/tx/{tx_hash}"
 
                     logger.info("Live onchain swap broadcast successfully", tx_hash=tx_hash)
@@ -342,7 +341,7 @@ class UniswapService:
                         "timestamp": time.time(),
                     }
                 except Exception as e:
-                    logger.error("Failed broadcasting live transaction", error=str(e))
+                    logger.error("Failed broadcasting live transaction via CDP", error=str(e))
                     raise RuntimeError(f"Live onchain swap execution failed: {str(e)}")
 
         # Mode B: Paper Trading / Simulation (Live Spot Rates, Simulated Broadcast)

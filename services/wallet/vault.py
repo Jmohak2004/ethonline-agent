@@ -1,17 +1,17 @@
 """
 AgentFi — Wallet Vault Service
-Production-grade EVM wallet generation, AES-256-GCM encrypted private key custody,
+Production-grade EVM wallet generation using Coinbase Developer Platform (CDP) MPC Wallets,
 and live onchain balance checking across Base and Ethereum testnet/mainnet.
 """
 import os
 import secrets
+import json
 from typing import Dict, Any, Tuple, Optional
 import structlog
 from eth_account import Account
 from web3 import Web3
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
+from cdp import CdpClient
+from cdp.evm_server_account import EvmServerAccount
 
 logger = structlog.get_logger()
 
@@ -77,54 +77,31 @@ NETWORKS = {
 
 class WalletVaultService:
     def __init__(self, master_secret: Optional[str] = None):
-        self.master_secret = (
-            master_secret
-            or os.getenv("APP_SECRET_KEY")
-            or "agentfi-production-master-secret-key-must-be-long"
-        ).encode()
+        self.cdp_api_key_name = os.getenv("CDP_API_KEY_NAME")
+        # Ensure private key handles literal \n properly if passed as a string
+        priv_key = os.getenv("CDP_API_KEY_PRIVATE_KEY", "")
+        self.cdp_api_key_private_key = priv_key.replace("\\n", "\n")
 
-    def _derive_key(self, salt: bytes) -> bytes:
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100_000,
-        )
-        return kdf.derive(self.master_secret)
+    def _get_cdp_client(self) -> CdpClient:
+        if not self.cdp_api_key_name or not self.cdp_api_key_private_key:
+            raise ValueError("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set to use MPC wallets.")
+        return CdpClient(api_key_id=self.cdp_api_key_name, private_key=self.cdp_api_key_private_key)
 
-    def encrypt_private_key(self, private_key_hex: str) -> str:
-        """Encrypts an EVM private key using AES-256-GCM with a random salt and nonce."""
-        salt = secrets.token_bytes(16)
-        nonce = secrets.token_bytes(12)
-        key = self._derive_key(salt)
-        aesgcm = AESGCM(key)
-        ciphertext = aesgcm.encrypt(nonce, private_key_hex.encode(), None)
-        # Format: salt:nonce:ciphertext (all hex)
-        return f"{salt.hex()}:{nonce.hex()}:{ciphertext.hex()}"
+    async def create_wallet(self, network: str = "base-sepolia") -> Tuple[str, str]:
+        """Generates a new CDP MPC wallet and returns (address, mpc_identifier)."""
+        logger.info("Generating CDP MPC Wallet...", network=network)
+        async with self._get_cdp_client() as client:
+            account = await client.evm.create_account(network_id=network)
+            address = account.address.address_id
+            logger.info("Generated new CDP MPC wallet", address=address)
+            # Store the CDP account name in place of the encrypted private key to load it later
+            return address, "CDP_MPC"
 
-    def decrypt_private_key(self, encrypted_str: str) -> str:
-        """Decrypts the AES-256-GCM encrypted private key back to hex."""
-        parts = encrypted_str.split(":")
-        if len(parts) != 3:
-            raise ValueError("Invalid encrypted key format")
-        salt = bytes.fromhex(parts[0])
-        nonce = bytes.fromhex(parts[1])
-        ciphertext = bytes.fromhex(parts[2])
-        key = self._derive_key(salt)
-        aesgcm = AESGCM(key)
-        return aesgcm.decrypt(nonce, ciphertext, None).decode()
-
-    def create_wallet(self) -> Tuple[str, str]:
-        """Generates a new cryptographic EVM account and returns (address, encrypted_key)."""
-        acct = Account.create()
-        encrypted_key = self.encrypt_private_key(acct.key.hex())
-        logger.info("Generated new encrypted EVM wallet", address=acct.address)
-        return acct.address, encrypted_key
-
-    def get_account_from_encrypted_key(self, encrypted_key: str):
-        """Reconstructs the eth_account object from encrypted key in memory."""
-        raw_key = self.decrypt_private_key(encrypted_key)
-        return Account.from_key(raw_key)
+    async def get_cdp_account(self, address: str) -> EvmServerAccount:
+        """Reconstructs the EvmServerAccount from the address using the CDP backend."""
+        async with self._get_cdp_client() as client:
+            account = await client.evm.get_account(address=address)
+            return account
 
     async def auto_sponsor_wallet(self, target_address: str, network: str = "sepolia") -> bool:
         """

@@ -28,3 +28,4 @@ structlog==24.4.0
 tenacity==9.0.0
 aiofiles==24.1.0
 pytz==2024.2
+cdp-sdk==1.48.1

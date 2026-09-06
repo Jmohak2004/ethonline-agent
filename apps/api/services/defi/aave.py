@@ -90,48 +90,58 @@ class AaveService:
         apy = await self.get_current_apy()
         
         try:
-            acct = vault_service.get_account_from_encrypted_key(encrypted_key)
+            from cdp import TransactionRequestEIP1559
+            cdp_account = await vault_service.get_cdp_account(wallet_address)
             usdc_contract = self.w3.eth.contract(address=Web3.to_checksum_address(self.usdc_address), abi=ERC20_ABI)
             pool_contract = self.w3.eth.contract(address=Web3.to_checksum_address(self.pool_address), abi=AAVE_POOL_ABI)
             
             amount_units = int(amount * (10 ** 6)) # USDC has 6 decimals
             
             # 1. Approve Aave Pool
-            nonce = self.w3.eth.get_transaction_count(acct.address)
-            gas_price = self.w3.eth.gas_price
-            
-            approve_tx = usdc_contract.functions.approve(
+            approve_tx_data = usdc_contract.functions.approve(
                 Web3.to_checksum_address(self.pool_address), 
                 amount_units
             ).build_transaction({
-                "from": acct.address,
-                "nonce": nonce,
-                "gas": 100_000,
-                "gasPrice": gas_price,
-            })
+                "from": Web3.to_checksum_address(wallet_address),
+                "nonce": 0, "gas": 0, "gasPrice": 0 # placeholders so build_transaction succeeds
+            })["data"]
             
-            signed_approve = acct.sign_transaction(approve_tx)
-            self.w3.eth.send_raw_transaction(signed_approve.raw_transaction)
+            approve_req = {
+                "to": Web3.to_checksum_address(self.usdc_address),
+                "data": approve_tx_data,
+                "value": 0
+            }
+            
+            await cdp_account.send_transaction(
+                transaction=TransactionRequestEIP1559(**approve_req),
+                network=self.network
+            )
             
             # Wait for approval logic would normally go here, but since this is a demonstration we will 
             # assume the approval might be mined shortly, or just send the supply with nonce+1.
             # In a robust production environment, you would await the receipt.
             
             # 2. Supply to Aave
-            supply_tx = pool_contract.functions.supply(
+            supply_tx_data = pool_contract.functions.supply(
                 Web3.to_checksum_address(self.usdc_address),
                 amount_units,
-                acct.address,
+                Web3.to_checksum_address(wallet_address),
                 0 # referral code
             ).build_transaction({
-                "from": acct.address,
-                "nonce": nonce + 1,
-                "gas": 300_000,
-                "gasPrice": gas_price,
-            })
+                "from": Web3.to_checksum_address(wallet_address),
+                "nonce": 0, "gas": 0, "gasPrice": 0 # placeholders
+            })["data"]
             
-            signed_supply = acct.sign_transaction(supply_tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_supply.raw_transaction).hex()
+            supply_req = {
+                "to": Web3.to_checksum_address(self.pool_address),
+                "data": supply_tx_data,
+                "value": 0
+            }
+
+            tx_hash = await cdp_account.send_transaction(
+                transaction=TransactionRequestEIP1559(**supply_req),
+                network=self.network
+            )
             
             logger.info(
                 "Auto-Yield: Supplied USDC to Aave v3 on-chain",

@@ -13,3 +13,23 @@ HEDERA_PRIVATE_KEY=0x446d42da1443d01249a79e1cd41e9aaacfe798d5b2359862b06f17487f5
 GRAPH_API_KEY=cdaae9d8f950253601a009955292ac7c
 PRIVY_APP_ID=cmtoph3sl00d30bjum0y2noc9
 PRIVY_APP_SECRET=privy_app_secret_zDYFzbQoTgytSwzUFUMhoX7BSkkUyyHwrCnRT2SLUo9hZEiAUSAZyLyogmWF5MyB191tvksbC34MEyXGKFo1dzj
+
+
+1. Coinbase Developer Platform (CDP) / MPC Wallets
+Right now, you are generating standard EOA wallets and storing encrypted private keys in your database. This is a security risk. If you integrate Coinbase MPC Wallets (or Privy/ZeroDev), the AI agent can execute trades without ever knowing the user's actual private key, and the user retains full custody. Judges love MPC abstraction.
+
+2. Multi-Chain Intents (CCIP or LayerZero)
+Right now, the agent only trades on one chain (Base/Sepolia). You could add a Cross-Chain Intent feature. If the user texts "Buy me $20 of Arbitrum using my Base USDC", the agent uses Chainlink CCIP or LayerZero to seamlessly bridge and swap the funds in the background.
+
+3. Farcaster Social Integration
+Crypto social is massive right now. You could add a feature where if an agent makes a highly profitable trade, it autonomously casts an EAS-verified proof of its trade to Farcaster (Warpcast) to build a public track record. Users could reply "Copy trade" on Farcaster to mirror the agent!
+
+4. Dynamic Yield Hopping (Morpho vs Aave)
+Right now, idle USDC goes straight to Aave. You could upgrade RiskGuardian into a YieldOptimizer Agent that actively checks Aave, Compound, and Morpho. If Morpho's APY spikes higher than Aave, the agent automatically withdraws and moves the funds to Morpho while the user sleeps.
+
+5. ZK-Proofs for AI Hallucinations
+You already have EAS attestations, which is great. To take it further, you could run the agent's logic through an OPML (Optimistic Machine Learning) or TEE (Trusted Execution Environment) framework so the blockchain mathematically verifies that the AI didn't hallucinate the trade logic.
+
+My Recommendation: Adding Coinbase MPC Wallets or Dynamic Yield Hopping would be the fastest to implement while offering the highest "WOW" factor for the judges.
+
+Would you like me to create an implementation plan for any of these?
