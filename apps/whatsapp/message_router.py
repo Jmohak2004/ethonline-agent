@@ -15,21 +15,23 @@ from sqlalchemy import select, and_
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../api")))
 
+from datetime import datetime, timedelta, timezone
 from database import AsyncSessionLocal, init_db
 from models import (
     User, RiskProfile, PortfolioPosition, TradeRequest, TradeExecution,
-    TradeStatus, RiskLevel, TradingMode, UserStatus
+    TradeStatus, RiskLevel, TradingMode, UserStatus, Agent, Permission,
+    AgentSubscription, SubscriptionStatus
 )
 from packages.agents.agents import MultiAgentOrchestrator
 from services.arc.client import ArcSettlementService
-from services.wallet.vault import WalletVaultService
+from services.wallet.vault import WalletVaultService, NETWORKS
 from services.market.live_feed import LiveMarketFeedService
 from services.uniswap.client import UniswapService
 from intent_classifier import classify_intent, Intent, extract_entities
 
 logger = structlog.get_logger()
 API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
-NETWORK = os.getenv("NETWORK", "base").lower()
+NETWORK = os.getenv("NETWORK", "sepolia").lower()
 TRADING_MODE = os.getenv("TRADING_MODE", "LIVE").upper()
 
 orchestrator = MultiAgentOrchestrator()
@@ -142,6 +144,8 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
             reply = await handle_portfolio(from_number)
         elif intent == Intent.APPROVE_TRADE:
             reply = await handle_approve_trade(from_number, text)
+        elif intent == Intent.MANAGE_AGENTS:
+            reply = await handle_manage_agents(from_number, text)
         elif intent == Intent.REJECT_TRADE:
             reply = "❌ Action cancelled. No funds or transactions were executed."
         elif intent == Intent.HELP:
@@ -149,13 +153,11 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
         else:
             reply = "🤖 I didn't quite catch that. Type *help* to see what I can do, or ask *'Analyze ETH'* to run your agents."
 
-        await send_out_of_band(from_number, reply)
         return reply
 
     except Exception as e:
         logger.error("Message routing error", error=str(e))
         err_msg = "⚠️ Something went wrong processing your request. Please try again in a moment."
-        await send_out_of_band(from_number, err_msg)
         return err_msg
 
 
@@ -165,21 +167,32 @@ async def handle_register(from_number: str) -> str:
     user, risk = await get_or_create_user(from_number)
     addr = user.wallet_address
     explorer_url = vault_service.get_explorer_url(addr, NETWORK)
-    net_name = "Base Mainnet" if NETWORK == "base" else "Base Sepolia"
+    net_cfg = NETWORKS.get(NETWORK, NETWORKS["sepolia"])
+    net_name = net_cfg["name"]
+
+    faucet_msg = (
+        f"\n🚰 *Sepolia Testnet Faucets (Free Test ETH):*\n"
+        f"• https://cloud.google.com/application/web3/faucet/ethereum/sepolia\n"
+        f"• https://sepoliafaucet.com\n"
+        if "sepolia" in NETWORK else ""
+    )
 
     return (
         f"👋 *Welcome to AgentFi!*\n\n"
         f"Your personal autonomous agent wallet has been created on *{net_name}*:\n\n"
         f"• *Wallet Address:* `{addr}`\n"
-        f"• *Network:* {net_name} (Chain ID: 8453)\n"
+        f"• *Network:* {net_name} (Chain ID: {net_cfg['chain_id']})\n"
         f"• *Risk Profile:* {risk.risk_level.value} (Max ${risk.maximum_trade_amount:.2f}/trade)\n"
-        f"• *Explorer:* {explorer_url}\n\n"
-        f"📥 *Deposit Instructions:*\n"
-        f"To start live trading, send ETH or USDC on Base to your wallet address above.\n\n"
+        f"• *Explorer:* {explorer_url}\n"
+        f"{faucet_msg}\n"
+        f"📥 *Getting Started:*\n"
+        f"Claim free test ETH from the faucet to your wallet address above to start live testing!\n\n"
         f"💬 *Quick Commands:*\n"
         f"• *balance* — Check your live onchain funds\n"
         f"• *analyze ETH* — Run the 5-agent research swarm\n"
-        f"• *browse* — View verified trading agents"
+        f"• *appoint WhaleWatcher* — Appoint agent & grant session permissions\n"
+        f"• *buy WhaleWatcher* — Subscribe to real-time alpha feed\n"
+        f"• *trade* — Execute an onchain swap via Uniswap v3"
     )
 
 
@@ -192,15 +205,23 @@ async def handle_balance(from_number: str) -> str:
     usdc_val = round(balances["usdc_balance"], 2)
     total_val = round(usdc_val + eth_val, 2)
 
+    faucet_msg = (
+        f"\n🚰 *Need testnet funds?* Copy your wallet address above and paste into the Sepolia faucet:\n"
+        f"• https://cloud.google.com/application/web3/faucet/ethereum/sepolia\n"
+        f"• https://sepoliafaucet.com\n"
+        if "sepolia" in NETWORK and total_val < 0.5 else ""
+    )
+
     return (
         f"💰 *AgentFi Live Wallet Balance*\n\n"
-        f"• *Wallet:* `{user.wallet_address[:6]}...{user.wallet_address[-4:]}`\n"
+        f"• *Wallet:* `{user.wallet_address}`\n"
         f"• *Network:* {balances['network']}\n"
         f"• *USDC Cash:* ${usdc_val:.2f} USDC\n"
         f"• *ETH Holdings:* {balances['eth_balance']} ETH (~${eth_val:.2f})\n"
         f"• *Total Value:* **${total_val:.2f} USD**\n\n"
-        f"🔍 *View on Explorer:*\n{balances['explorer_url']}\n\n"
-        f"💡 _To deposit funds, send ETH or USDC on Base to:_\n`{user.wallet_address}`"
+        f"🔍 *View on Explorer:*\n{balances['explorer_url']}\n"
+        f"{faucet_msg}\n"
+        f"💡 _Deposit address:_\n`{user.wallet_address}`"
     )
 
 
@@ -216,31 +237,185 @@ async def handle_browse_agents(from_number: str, text: str) -> str:
         "3. *NewsScout* (`newsscout.agentfi.eth`)\n"
         "⭐ 4.9 | 3,100 users | Risk: Low | FREE\n"
         "_Live protocol catalysts, announcements & LLM sentiment analysis_\n\n"
-        "Type *buy WhaleWatcher* to subscribe, or *analyze ETH* to run the swarm."
+        "4. *RiskGuardian* (`riskguardian.agentfi.eth`)\n"
+        "⭐ 5.0 | 4,890 users | Risk: Low | FREE\n"
+        "_Chainlink CRE TEE confidential policy & stop-loss engine_\n\n"
+        "5. *ExecutionAgent* (`execution.agentfi.eth`)\n"
+        "⭐ 4.9 | 2,100 users | Risk: Medium | Pay-per-use\n"
+        "_Uniswap v3 automated swap router with slippage protection_\n\n"
+        "💬 *Actions:*\n"
+        "• Reply *'appoint WhaleWatcher'* to appoint agent to your swarm\n"
+        "• Reply *'buy WhaleWatcher'* to subscribe via Arc USDC\n"
+        "• Reply *'analyze ETH'* to run the swarm"
     )
 
 
 async def handle_buy_agent(from_number: str, text: str) -> str:
     user, _ = await get_or_create_user(from_number)
+    text_lower = text.lower()
+
+    target_slug = "whalewatcher-pro"
     agent_name = "WhaleWatcher Pro"
     cost = 3.00
+
+    if "market" in text_lower or "mind" in text_lower:
+        target_slug = "marketmind"
+        agent_name = "MarketMind"
+        cost = 3.00
+    elif "sentiment" in text_lower:
+        target_slug = "sentiment-agent"
+        agent_name = "SentimentAgent"
+        cost = 2.00
+    elif "news" in text_lower or "scout" in text_lower:
+        target_slug = "newsscout"
+        agent_name = "NewsScout"
+        cost = 0.00
+    elif "risk" in text_lower or "guardian" in text_lower:
+        target_slug = "riskguardian"
+        agent_name = "RiskGuardian"
+        cost = 0.00
+    elif "execut" in text_lower:
+        target_slug = "execution-agent"
+        agent_name = "ExecutionAgent"
+        cost = 0.00
+    elif "pack" in text_lower or "alpha" in text_lower:
+        target_slug = "alpha-pack"
+        agent_name = "Balanced Alpha Pack"
+        cost = 5.00
 
     settlement = await arc_service.process_subscription_payment(
         user_wallet=user.wallet_address,
         developer_wallet="0xDeveloperWallet00000000000000000000",
         amount_usdc=cost,
-        agent_id="whalewatcher-pro",
+        agent_id=target_slug,
         plan_name="Monthly Tier",
     )
+
+    # Record subscription in database
+    async with AsyncSessionLocal() as session:
+        agent_stmt = select(Agent).where(Agent.slug == target_slug)
+        agent_res = await session.execute(agent_stmt)
+        ag = agent_res.scalar_one_or_none()
+
+        now = datetime.now(timezone.utc)
+        sub = AgentSubscription(
+            user_id=user.id,
+            agent_id=ag.id if ag else None,
+            status=SubscriptionStatus.ACTIVE,
+            started_at=now,
+            expires_at=now + timedelta(days=30),
+            amount_paid=cost,
+            currency="USDC",
+            tx_hash=settlement["tx_hash"],
+        )
+        session.add(sub)
+        await session.commit()
+
     return (
         f"💳 *Subscription Successfully Activated!*\n\n"
-        f"You subscribed to *{agent_name}* ({cost:.2f} USDC/mo).\n"
-        f"• *Settlement Layer:* Arc & Circle USDC\n"
+        f"You subscribed to *{agent_name}* (${cost:.2f} USDC/mo).\n"
+        f"• *Settlement Network:* Ethereum Sepolia (Arc & Circle USDC)\n"
         f"• *Developer Payout (97.5%):* ${settlement['developer_payout_usdc']:.2f} USDC\n"
         f"• *Platform Fee (2.5%):* ${settlement['platform_fee_usdc']:.2f} USDC\n"
         f"• *Tx Hash:* `{settlement['tx_hash'][:18]}...`\n\n"
-        f"WhaleWatcher is now actively feeding onchain intelligence to your autonomous swarm."
+        f"*{agent_name}* is now actively feeding real-time intelligence to your swarm!\n"
+        f"Reply *'appoint {agent_name.split()[0]}'* to grant autonomous execution permissions."
     )
+
+
+async def handle_manage_agents(from_number: str, text: str) -> str:
+    user, risk = await get_or_create_user(from_number)
+    text_lower = text.lower()
+
+    # Check if a specific agent is requested
+    target_slug = None
+    if "whale" in text_lower:
+        target_slug = "whalewatcher-pro"
+    elif "market" in text_lower or "mind" in text_lower:
+        target_slug = "marketmind"
+    elif "news" in text_lower or "scout" in text_lower:
+        target_slug = "newsscout"
+    elif "sentiment" in text_lower:
+        target_slug = "sentiment-agent"
+    elif "risk" in text_lower or "guardian" in text_lower:
+        target_slug = "riskguardian"
+    elif "execut" in text_lower:
+        target_slug = "execution-agent"
+
+    async with AsyncSessionLocal() as session:
+        if target_slug:
+            stmt = select(Agent).where(Agent.slug == target_slug)
+            res = await session.execute(stmt)
+            agent = res.scalar_one_or_none()
+            if not agent:
+                return f"⚠️ Agent `{target_slug}` not found in marketplace registry."
+
+            # Check if existing permission exists
+            perm_stmt = select(Permission).where(
+                and_(Permission.user_id == user.id, Permission.agent_id == agent.id, Permission.is_active == True)
+            )
+            perm_res = await session.execute(perm_stmt)
+            existing_perm = perm_res.scalar_one_or_none()
+
+            max_trade = risk.maximum_trade_amount
+            daily_limit = risk.daily_loss_limit * 2.0
+
+            if not existing_perm:
+                now = datetime.now(timezone.utc)
+                perm = Permission(
+                    user_id=user.id,
+                    agent_id=agent.id,
+                    max_transaction=max_trade,
+                    daily_limit=daily_limit,
+                    daily_spent=0.0,
+                    allowed_actions=["ANALYZE", "SIGNAL", "SWAP"],
+                    blocked_actions=["WITHDRAW", "TRANSFER_OWNERSHIP"],
+                    is_active=True,
+                    expires_at=now + timedelta(days=30),
+                )
+                session.add(perm)
+                await session.commit()
+
+            return (
+                f"🛡️ *Agent Appointed to Swarm!*\n\n"
+                f"• *Agent:* *{agent.name}* (`{agent.ens_name or agent.slug}`)\n"
+                f"• *Category:* {agent.category.value if hasattr(agent.category, 'value') else agent.category}\n"
+                f"• *Session Key Allowance:* Max ${max_trade:.2f} / trade\n"
+                f"• *Daily Limit:* ${daily_limit:.2f}\n"
+                f"• *Withdrawal Permissions:* ❌ Strictly Blocked (Fail-Closed)\n"
+                f"• *Status:* **ACTIVE & APPOINTED**\n\n"
+                f"This agent is now authorized to generate signals and execute approved actions within your limits.\n\n"
+                f"Reply *'analyze ETH'* to test your appointed agent swarm, or *'trade'* to execute."
+            )
+
+        # If no specific agent, list appointed agents
+        perms_stmt = (
+            select(Permission, Agent)
+            .join(Agent, Permission.agent_id == Agent.id)
+            .where(and_(Permission.user_id == user.id, Permission.is_active == True))
+        )
+        res_p = await session.execute(perms_stmt)
+        appointed = res_p.all()
+
+        if not appointed:
+            return (
+                "🤖 *No Agents Currently Appointed*\n\n"
+                "You can appoint any verified agent to your autonomous swarm:\n"
+                "• Reply *'appoint WhaleWatcher'* — Onchain whale tracking\n"
+                "• Reply *'appoint MarketMind'* — RSI & momentum trading\n"
+                "• Reply *'appoint RiskGuardian'* — Enforce stop-loss limits\n"
+                "• Reply *'appoint ExecutionAgent'* — Uniswap v3 execution"
+            )
+
+        agent_lines = []
+        for p, a in appointed:
+            agent_lines.append(f"• *{a.name}* (Max ${p.max_transaction:.2f}/trade, Active)")
+
+        return (
+            f"🤖 *Your Appointed Agent Swarm:*\n\n"
+            + "\n".join(agent_lines) +
+            "\n\nTo appoint another agent, reply *'appoint <Agent Name>'*."
+        )
 
 
 async def handle_set_risk(from_number: str, text: str) -> str:
@@ -363,19 +538,55 @@ async def handle_portfolio(from_number: str) -> str:
 
 async def handle_approve_trade(from_number: str, text: str) -> str:
     text_lower = text.lower()
-    if not any(word in text_lower for word in ["yes", "approve", "confirm", "execute", "ok", "sure", "do it"]):
+    if not any(word in text_lower for word in ["yes", "approve", "confirm", "execute", "ok", "sure", "do it", "trade", "swap", "buy", "sell"]):
         return "❌ Trade cancelled. No funds were moved."
 
     user, risk = await get_or_create_user(from_number)
-    amount_usd = min(20.0, risk.maximum_trade_amount)
+
+    # Check live onchain balances on configured network (e.g. Sepolia)
+    balances = await vault_service.get_onchain_balances(user.wallet_address, network=NETWORK)
+    eth_bal = balances.get("eth_balance", 0.0)
+    usdc_bal = balances.get("usdc_balance", 0.0)
+    spot_price = await market_feed.get_spot_price("ETH")
+    if spot_price <= 0:
+        spot_price = 2500.0
+
+    # Determine token_in, token_out and amount_in
+    if "usdc to eth" in text_lower or ("buy" in text_lower and "eth" in text_lower and "usdc" not in text_lower):
+        token_in = "USDC"
+        token_out = "ETH"
+        amount_in = min(20.0, risk.maximum_trade_amount)
+    elif "eth to usdc" in text_lower or ("sell" in text_lower and "eth" in text_lower) or ("buy" in text_lower and "usdc" in text_lower):
+        token_in = "ETH"
+        token_out = "USDC"
+        eth_for_20_usd = round(min(20.0, risk.maximum_trade_amount) / spot_price, 5)
+        amount_in = min(eth_for_20_usd, eth_bal * 0.8) if eth_bal > 0 else eth_for_20_usd
+    else:
+        # Smart routing:
+        # If user has USDC, swap USDC -> ETH
+        # If user has ETH (e.g. from Sepolia faucet) but no USDC, swap ETH -> USDC
+        if usdc_bal >= 5.0:
+            token_in = "USDC"
+            token_out = "ETH"
+            amount_in = min(20.0, min(risk.maximum_trade_amount, usdc_bal))
+        elif eth_bal >= 0.001:
+            token_in = "ETH"
+            token_out = "USDC"
+            amount_in = min(0.005, round(eth_bal * 0.8, 5))
+        else:
+            token_in = "ETH"
+            token_out = "USDC"
+            amount_in = 0.005
+
+    amount_usd = amount_in if token_in == "USDC" else round(amount_in * spot_price, 2)
 
     swap_res = await uniswap_service.execute_swap(
-        token_in="USDC",
-        token_out="ETH",
-        amount_in=amount_usd,
+        token_in=token_in,
+        token_out=token_out,
+        amount_in=amount_in,
         recipient_wallet=user.wallet_address,
         encrypted_private_key=user.encrypted_private_key,
-        max_slippage_percent=1.0,
+        max_slippage_percent=2.0,
     )
 
     if not swap_res.get("success"):
@@ -385,9 +596,9 @@ async def handle_approve_trade(from_number: str, text: str) -> str:
     async with AsyncSessionLocal() as session:
         trade_req = TradeRequest(
             user_id=user.id,
-            asset="ETH",
+            asset=token_out,
             amount_usd=amount_usd,
-            direction="BUY",
+            direction="BUY" if token_out == "ETH" else "SELL",
             status=TradeStatus.COMPLETED,
             trading_mode=TradingMode.LIVE if swap_res.get("mode") == "LIVE" else TradingMode.PAPER,
         )
@@ -397,7 +608,7 @@ async def handle_approve_trade(from_number: str, text: str) -> str:
         execution = TradeExecution(
             trade_request_id=trade_req.id,
             user_id=user.id,
-            asset="ETH",
+            asset=token_out,
             amount_usd=amount_usd,
             amount_token=swap_res["amount_out"],
             price_executed=swap_res["execution_price"],
@@ -407,26 +618,32 @@ async def handle_approve_trade(from_number: str, text: str) -> str:
         session.add(execution)
         await session.commit()
 
-    mode_label = "Live Onchain (Base)" if swap_res.get("mode") == "LIVE" else "Paper / Simulation"
+    net_name = NETWORKS.get(NETWORK, NETWORKS["sepolia"])["name"]
+    mode_label = f"Live Onchain ({net_name})" if swap_res.get("mode") == "LIVE" else "Paper / Simulation"
 
     return (
         f"✅ *Trade Executed via Uniswap v3*\n\n"
-        f"• *Swapped:* ${amount_usd:.2f} USDC -> {swap_res['amount_out']} ETH\n"
+        f"• *Swapped:* {amount_in} {token_in} ➔ {swap_res['amount_out']} {token_out}\n"
+        f"• *Value:* ~${amount_usd:.2f} USD\n"
         f"• *Execution Mode:* {mode_label}\n"
-        f"• *Price:* ${swap_res['execution_price']:,.2f} / ETH\n"
+        f"• *Price:* ${swap_res['execution_price']:,.2f}\n"
         f"• *Tx Hash:* `{swap_res['tx_hash'][:20]}...`\n"
         f"• *Verified Explorer:* {swap_res['explorer_url']}\n\n"
-        f"Your portfolio has been updated automatically."
+        f"Your portfolio on {net_name} has been updated automatically."
     )
 
 
 async def get_help_message() -> str:
+    net_name = NETWORKS.get(NETWORK, NETWORKS["sepolia"])["name"]
     return (
-        "🤖 *AgentFi Command Guide*\n\n"
+        f"🤖 *AgentFi Command Guide ({net_name})*\n\n"
         "Talk naturally or use any of these commands:\n\n"
-        "• *\"balance\"* or *\"deposit\"* — View your onchain wallet address & live balances\n"
-        "• *\"Analyze ETH\"* — Run the 5-agent AI swarm with live indicators\n"
-        "• *\"Execute\"* — Execute an autonomous swap via Uniswap v3\n"
+        "• *\"balance\"* — Check your onchain wallet address, holdings & faucet links\n"
+        "• *\"analyze ETH\"* — Run the 5-agent AI swarm with live indicators\n"
+        "• *\"trade\"* or *\"swap\"* — Execute an onchain swap via Uniswap v3\n"
+        "• *\"appoint WhaleWatcher\"* — Appoint agent & grant scoped session permissions\n"
+        "• *\"buy WhaleWatcher\"* — Subscribe to agent via Arc USDC settlement\n"
+        "• *\"my agents\"* — View all active appointed agents in your swarm\n"
         "• *\"portfolio\"* — View your holdings & live valuation\n"
         "• *\"set risk to low\"* — Adjust your max trade & loss limits\n"
         "• *\"browse\"* — Explore verified trading agents on the marketplace\n\n"

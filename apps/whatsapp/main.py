@@ -44,10 +44,13 @@ async def receive_twilio_webhook(request: Request):
     # Route message through AI orchestrator and return TwiML response
     reply_text = await route_message(from_number, body_text, message_sid)
 
+    import html
+    escaped_reply = html.escape(reply_text)
+
     # Return Twilio TwiML XML format for synchronous response
     twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>{reply_text}</Message>
+    <Message>{escaped_reply}</Message>
 </Response>"""
     return Response(content=twiml, media_type="application/xml")
 

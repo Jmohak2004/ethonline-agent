@@ -206,6 +206,14 @@ class UniswapService:
         # Mode A: LIVE Real-Money Execution
         if self.trading_mode == "LIVE":
             if available_balance < amount_in:
+                net_name = NETWORKS.get(self.network, NETWORKS["sepolia"])["name"]
+                faucet_note = ""
+                if "sepolia" in self.network:
+                    faucet_note = (
+                        "\n\n🚰 *Get Free Sepolia Testnet ETH:*\n"
+                        "• https://cloud.google.com/application/web3/faucet/ethereum/sepolia\n"
+                        "• https://sepoliafaucet.com\n"
+                    )
                 return {
                     "success": False,
                     "error": "INSUFFICIENT_ONCHAIN_FUNDS",
@@ -216,12 +224,13 @@ class UniswapService:
                     "required_amount": amount_in,
                     "currency": token_in.upper(),
                     "message": (
-                        f"⚠️ Insufficient onchain {token_in.upper()} balance!\n\n"
+                        f"⚠️ Insufficient onchain {token_in.upper()} balance on *{net_name}*!\n\n"
                         f"• Wallet: `{valid_recipient}`\n"
-                        f"• Current Balance: {available_balance:.2f} {token_in.upper()}\n"
-                        f"• Required: {amount_in:.2f} {token_in.upper()}\n\n"
-                        f"👉 Please deposit {token_in.upper()} on Base to this address to execute live trades:\n"
-                        f"{vault_service.get_explorer_url(valid_recipient, self.network)}"
+                        f"• Current Balance: {available_balance:.4f} {token_in.upper()}\n"
+                        f"• Required: {amount_in:.4f} {token_in.upper()}\n\n"
+                        f"👉 Please fund `{valid_recipient}` to execute live trades.\n"
+                        f"Explorer: {vault_service.get_explorer_url(valid_recipient, self.network)}"
+                        f"{faucet_note}"
                     ),
                 }
 

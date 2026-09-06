@@ -40,9 +40,12 @@ REGEX_PATTERNS: list[Tuple[str, Intent]] = [
     (r"\b(create( my)? account|register|sign up|onboard)\b", Intent.REGISTER),
     (r"\b(balance|my wallet|funds|how much (money|usdc|eth|cash))\b", Intent.BALANCE),
 
-    # Approvals & Rejections
-    (r"\b(yes|approve|confirm|execute|proceed|do it|sure|go ahead)\b", Intent.APPROVE_TRADE),
+    # Trading, Swaps & Approvals
+    (r"\b(trade|swap|buy eth|sell eth|buy usdc|sell usdc|execute|do it|proceed|confirm|approve|sure|go ahead)\b", Intent.APPROVE_TRADE),
     (r"\b(no|reject|cancel|stop|don't|do not execute)\b", Intent.REJECT_TRADE),
+
+    # Appoint & Manage Agents
+    (r"\b(appoint|hire|assign|delegate|assign permission|my agents|manage agents)\b", Intent.MANAGE_AGENTS),
 
     # Risk Configuration
     (r"\b(set (my )?risk|i am (low|medium|high) risk|risk level|daily limit|max trade)\b", Intent.SET_RISK),

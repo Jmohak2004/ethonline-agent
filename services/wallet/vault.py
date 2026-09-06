@@ -65,8 +65,8 @@ NETWORKS = {
     "sepolia": {
         "name": "Ethereum Sepolia",
         "chain_id": 11155111,
-        "rpc": os.getenv("SEPOLIA_RPC_URL", "https://rpc.sepolia.org"),
-        "explorer": "https://eth-sepolia.blockscout.com",
+        "rpc": os.getenv("SEPOLIA_RPC_URL", "https://ethereum-sepolia-rpc.publicnode.com"),
+        "explorer": "https://sepolia.etherscan.io",
         "tokens": {
             "USDC": {"address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", "decimals": 6},
             "WETH": {"address": "0xfff9976782d46cc05630d1f6ebab18b2324d6b14", "decimals": 18},

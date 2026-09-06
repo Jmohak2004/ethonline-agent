@@ -53,3 +53,18 @@ app.include_router(signals.router, prefix="/signals", tags=["signals"])
 app.include_router(trades.router, prefix="/trades", tags=["trades"])
 app.include_router(permissions.router, prefix="/permissions", tags=["permissions"])
 app.include_router(demo.router)
+
+
+from pydantic import BaseModel
+from services.whatsapp_service import send_whatsapp_message
+
+class SendWhatsAppRequest(BaseModel):
+    to: str
+    body: str
+
+@app.post("/internal/send-whatsapp", tags=["internal"])
+async def internal_send_whatsapp(payload: SendWhatsAppRequest):
+    """Internal endpoint for out-of-band WhatsApp alerts and notifications."""
+    success = await send_whatsapp_message(to=payload.to, body=payload.body)
+    return {"success": success}
+
