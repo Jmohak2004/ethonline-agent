@@ -135,29 +135,36 @@ class WalletVaultService:
         cfg = NETWORKS.get(network.lower(), NETWORKS["sepolia"])
         sponsor_key = os.getenv("PLATFORM_SPONSOR_KEY")
         if not sponsor_key:
-            logger.warning("No PLATFORM_SPONSOR_KEY found in .env, skipping auto-faucet")
+            logger.warning("Auto-Faucet: PLATFORM_SPONSOR_KEY not set in .env. Faucet disabled.")
             return False
             
         try:
-            w3 = Web3(Web3.HTTPProvider(cfg["rpc"], request_kwargs={"timeout": 10}))
+            w3 = Web3(Web3.HTTPProvider(cfg["rpc"]))
             if not w3.is_connected():
                 return False
                 
-            sponsor_acct = Account.from_key(sponsor_key)
+            sponsor_acct = w3.eth.account.from_key(sponsor_key)
             nonce = w3.eth.get_transaction_count(sponsor_acct.address)
             
-            # Send 0.002 ETH for gas sponsorship
+            # Use EIP-1559 for safer real-money execution
+            latest_block = w3.eth.get_block("latest")
+            base_fee = latest_block.get('baseFeePerGas', w3.to_wei(1, 'gwei'))
+            max_priority_fee = w3.to_wei(2, 'gwei')
+            max_fee_per_gas = base_fee * 2 + max_priority_fee
+            
             tx = {
                 'nonce': nonce,
                 'to': Web3.to_checksum_address(target_address),
                 'value': w3.to_wei(0.002, 'ether'),
                 'gas': 21000,
-                'gasPrice': w3.eth.gas_price,
-                'chainId': cfg["chain_id"]
+                'maxFeePerGas': max_fee_per_gas,
+                'maxPriorityFeePerGas': max_priority_fee,
+                'chainId': cfg["chain_id"],
+                'type': 2
             }
             
             signed_tx = w3.eth.account.sign_transaction(tx, sponsor_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             logger.info("Auto-Faucet: Sponsored new wallet with 0.002 ETH", target=target_address, tx_hash=tx_hash.hex())
             return True
         except Exception as e:

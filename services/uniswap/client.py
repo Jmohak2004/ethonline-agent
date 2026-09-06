@@ -68,6 +68,40 @@ ERC20_ABI = [
 ]
 
 
+QUOTER_ADDRESSES = {
+    "base": "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+    "base-sepolia": "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+    "sepolia": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
+}
+
+QUOTER_ABI = [
+    {
+        "inputs": [
+            {
+                "components": [
+                    {"internalType": "address", "name": "tokenIn", "type": "address"},
+                    {"internalType": "address", "name": "tokenOut", "type": "address"},
+                    {"internalType": "uint256", "name": "amountIn", "type": "uint256"},
+                    {"internalType": "uint24", "name": "fee", "type": "uint24"},
+                    {"internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160"}
+                ],
+                "internalType": "struct IQuoterV2.QuoteExactInputSingleParams",
+                "name": "params",
+                "type": "tuple"
+            }
+        ],
+        "name": "quoteExactInputSingle",
+        "outputs": [
+            {"internalType": "uint256", "name": "amountOut", "type": "uint256"},
+            {"internalType": "uint160", "name": "sqrtPriceX96After", "type": "uint160"},
+            {"internalType": "uint32", "name": "initializedTicksCrossed", "type": "uint32"},
+            {"internalType": "uint256", "name": "gasEstimate", "type": "uint256"}
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
+
 @dataclass
 class SwapQuote:
     token_in: str
@@ -92,6 +126,7 @@ class UniswapService:
         net_cfg = NETWORKS.get(self.network, NETWORKS["base"])
         self.rpc_url = rpc_url or net_cfg["rpc"]
         self.router_address = ROUTER_ADDRESSES.get(self.network, ROUTER_ADDRESSES["base"])
+        self.quoter_address = QUOTER_ADDRESSES.get(self.network, QUOTER_ADDRESSES["base"])
         self.explorer = net_cfg["explorer"]
 
         try:
@@ -100,25 +135,60 @@ class UniswapService:
             self.w3 = None
 
     async def get_swap_quote(self, token_in: str, token_out: str, amount_in: float) -> SwapQuote:
-        """Fetch quote using live real-time market spot prices from exchanges."""
+        """Fetch true on-chain quote using Uniswap v3 Quoter to prevent MEV sandwich attacks."""
+        if not self.w3 or not self.w3.is_connected():
+            raise RuntimeError("Web3 is not connected. Cannot fetch on-chain quote.")
+            
+        net_tokens = TOKEN_ADDRESSES.get(self.network, TOKEN_ADDRESSES["base"])
+        token_in_addr = net_tokens.get(token_in.upper(), net_tokens.get("USDC"))
+        token_out_addr = net_tokens.get(token_out.upper(), net_tokens.get("WETH"))
+        
+        decimals_in = 6 if token_in.upper() == "USDC" else 18
+        decimals_out = 18 if token_out.upper() in ["ETH", "WETH"] else 6
+        amount_in_units = int(amount_in * (10 ** decimals_in))
+        
+        quoter = self.w3.eth.contract(address=Web3.to_checksum_address(self.quoter_address), abi=QUOTER_ABI)
+        
+        params = {
+            "tokenIn": Web3.to_checksum_address(token_in_addr),
+            "tokenOut": Web3.to_checksum_address(token_out_addr),
+            "amountIn": amount_in_units,
+            "fee": 500, # 0.05%
+            "sqrtPriceLimitX96": 0
+        }
+        
+        try:
+            # quoteExactInputSingle returns (amountOut, sqrtPriceX96After, initializedTicksCrossed, gasEstimate)
+            result = quoter.functions.quoteExactInputSingle(params).call()
+            amount_out_units = result[0]
+            estimated_amount_out = amount_out_units / (10 ** decimals_out)
+        except Exception as e:
+            logger.error("Quoter failed, falling back to spot mock", error=str(e))
+            # Fallback to the old logic if pool is empty or quoter fails
+            price_in = await market_feed.get_spot_price(token_in)
+            price_out = await market_feed.get_spot_price(token_out)
+            if price_out <= 0: price_out = 2480.0
+            usd_value = amount_in * price_in
+            estimated_amount_out = usd_value / price_out
+
+        # For execution_price and price_impact, we can compare on-chain out vs spot out
         price_in = await market_feed.get_spot_price(token_in)
         price_out = await market_feed.get_spot_price(token_out)
-
-        if price_out <= 0:
-            price_out = 2480.0
-
-        usd_value = amount_in * price_in
-        raw_out = usd_value / price_out
-
-        price_impact = min(0.001 * (usd_value / 1000.0), 0.015)
-        effective_out = raw_out * (1.0 - price_impact)
+        if price_out <= 0: price_out = 2480.0
+        
+        expected_spot_out = (amount_in * price_in) / price_out
+        
+        if expected_spot_out > 0:
+            price_impact = max(0, (expected_spot_out - estimated_amount_out) / expected_spot_out)
+        else:
+            price_impact = 0.0
 
         return SwapQuote(
             token_in=token_in.upper(),
             token_out=token_out.upper(),
             amount_in=amount_in,
-            estimated_amount_out=round(effective_out, 6),
-            execution_price=round(price_out / price_in, 4) if price_in > 0 else 0.0,
+            estimated_amount_out=round(estimated_amount_out, 6),
+            execution_price=round(amount_in / estimated_amount_out, 4) if estimated_amount_out > 0 else 0.0,
             price_impact_percent=round(price_impact * 100, 3),
             route=f"{token_in.upper()} -> 0.05% Uniswap Pool -> {token_out.upper()}",
         )

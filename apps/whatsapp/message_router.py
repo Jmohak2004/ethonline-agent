@@ -360,17 +360,17 @@ async def handle_manage_agents(from_number: str, text: str, entities: dict) -> s
     
     if not target_slug:
         if "whale" in text_lower:
-        target_slug = "whalewatcher-pro"
-    elif "market" in text_lower or "mind" in text_lower:
-        target_slug = "marketmind"
-    elif "news" in text_lower or "scout" in text_lower:
-        target_slug = "newsscout"
-    elif "sentiment" in text_lower:
-        target_slug = "sentiment-agent"
-    elif "risk" in text_lower or "guardian" in text_lower:
-        target_slug = "riskguardian"
-    elif "execut" in text_lower:
-        target_slug = "execution-agent"
+            target_slug = "whalewatcher-pro"
+        elif "market" in text_lower or "mind" in text_lower:
+            target_slug = "marketmind"
+        elif "news" in text_lower or "scout" in text_lower:
+            target_slug = "newsscout"
+        elif "sentiment" in text_lower:
+            target_slug = "sentiment-agent"
+        elif "risk" in text_lower or "guardian" in text_lower:
+            target_slug = "riskguardian"
+        elif "execut" in text_lower:
+            target_slug = "execution-agent"
 
     async with AsyncSessionLocal() as session:
         if target_slug:

@@ -76,9 +76,10 @@ async def parse_with_llm(text: str) -> Tuple[Intent, Dict[str, Any]]:
     Valid Intents: {[i.value for i in Intent]}
     
     Rules for Intents:
+    - BROWSE_AGENTS: User wants to see available agents or visit the marketplace (e.g. "browse", "show agents", "store", "what agents do you have")
     - APPROVE_TRADE: User wants to execute a trade, buy a token, or swap (e.g. "Buy $10 of ETH", "Swap 50 USDC for BTC", "Execute", "Do it")
-    - BUY_AGENT: User wants to subscribe to or buy an AI agent (e.g. "Buy WhaleWatcher", "Get NewsScout")
-    - MANAGE_AGENTS: Appoint or manage an agent (e.g. "Appoint WhaleWatcher")
+    - BUY_AGENT: User wants to subscribe to or buy an AI agent (e.g. "Buy WhaleWatcher", "Get NewsScout", "Subscribe to agent")
+    - MANAGE_AGENTS: Appoint or manage an agent (e.g. "Appoint WhaleWatcher", "my agents")
     - ANALYZE_MARKET: Asking about market conditions or analysis (e.g. "Analyze ETH", "What's happening with BTC")
     - FIND_OPPORTUNITIES: Asking the bot to find trades (e.g. "Find me trades under $50")
     - BALANCE: Checking wallet balance.
@@ -128,6 +129,15 @@ async def classify_intent(text: str, from_number: str) -> Tuple[Intent, Dict[str
                 return intent, entities
         
         text_lower = text_clean.lower()
+        
+        # Explicit intent fallbacks
+        if "browse" in text_lower or "store" in text_lower or "marketplace" in text_lower:
+            return Intent.BROWSE_AGENTS, entities
+        if "buy" in text_lower and any(a in text_lower for a in ["agent", "whalewatcher", "marketmind", "scout", "guardian"]):
+            return Intent.BUY_AGENT, entities
+        if "appoint" in text_lower or "my agents" in text_lower:
+            return Intent.MANAGE_AGENTS, entities
+            
         if any(k in text_lower for k in ["eth", "btc", "crypto", "market", "trade"]):
             return Intent.ANALYZE_MARKET, entities
         if any(k in text_lower for k in ["agent", "pack", "store", "shop"]):

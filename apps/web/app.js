@@ -40,72 +40,75 @@ const confidenceText = document.getElementById('confidence-text');
 const confidenceCircle = document.getElementById('confidence-circle');
 const signalText = document.getElementById('signal-text');
 
-const events = [
-    { type: 'info', msg: "WhaleWatcher detected $1.2M USDC moving to Coinbase." },
-    { type: 'buy', msg: "MarketMind signals STRONG BUY on ETH. RSI-14 at 38 (Oversold)." },
-    { type: 'info', msg: "NewsScout: EIP-7702 finalized. Catalyst positive." },
-    { type: 'info', msg: "RiskGuardian verified max trade limits ($20.00). Approved." },
-    { type: 'buy', msg: "Swarm Consensus Reached. Executing 0.005 ETH swap via Uniswap v3." },
-    { type: 'sell', msg: "SentimentAgent detects 15% drop in social volume. Neutral." },
-    { type: 'info', msg: "Aave v3 Auto-Yield processed 0.0001 USDC rewards." }
-];
+let lastEventCount = 0;
 
-let eventIndex = 0;
-function addFeedItem() {
-    const ev = events[eventIndex % events.length];
-    const el = document.createElement('div');
-    el.className = \`feed-item \${ev.type}\`;
-    
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-    el.innerHTML = `
-        <div class="feed-meta">
-            <span>System Log</span>
-            <span>${time}</span>
-        </div>
-        <div class="feed-content">${ev.msg}</div>
-    `;
-    
-    feedContainer.prepend(el);
-    if(feedContainer.children.length > 8) {
-        feedContainer.removeChild(feedContainer.lastChild);
+async function fetchDashboardFeed() {
+    try {
+        const response = await fetch('/api/feed');
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (data.events && data.events.length > 0) {
+            // Render only if new events appear (simplistic check)
+            if (data.events.length !== lastEventCount) {
+                feedContainer.innerHTML = '';
+                easList.innerHTML = '';
+                
+                let latestBuyConf = null;
+                
+                data.events.forEach(ev => {
+                    // Feed Items
+                    const el = document.createElement('div');
+                    el.className = `feed-item ${ev.type}`;
+                    const time = new Date(ev.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    el.innerHTML = `
+                        <div class="feed-meta">
+                            <span>System Log</span>
+                            <span>${time}</span>
+                        </div>
+                        <div class="feed-content">${ev.msg}</div>
+                    `;
+                    feedContainer.appendChild(el);
+                    
+                    // EAS Attestations
+                    if (ev.eas) {
+                        const easEl = document.createElement('div');
+                        easEl.className = 'eas-item';
+                        const easTime = new Date(ev.eas.time).toLocaleTimeString();
+                        const uid = ev.eas.uid;
+                        easEl.innerHTML = `
+                            <span>Attestation at ${easTime}</span>
+                            ${uid.substring(0,14)}...${uid.substring(uid.length-10)}
+                        `;
+                        easList.appendChild(easEl);
+                        
+                        // Fake parse confidence from msg for UI candy
+                        if (ev.msg.includes('Confidence:')) {
+                            const match = ev.msg.match(/Confidence:\s*([\d.]+)%/);
+                            if (match) {
+                                latestBuyConf = parseFloat(match[1]);
+                            }
+                        }
+                    }
+                });
+                
+                lastEventCount = data.events.length;
+                
+                if (latestBuyConf) {
+                    const conf = Math.floor(latestBuyConf);
+                    confidenceText.textContent = conf + '%';
+                    confidenceCircle.setAttribute('stroke-dasharray', `${conf}, 100`);
+                    if (conf > 90) signalText.textContent = "STRONG BUY";
+                    else if (conf < 85) signalText.textContent = "ACCUMULATE";
+                    else signalText.textContent = "HOLD";
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Dashboard Feed Error:", e);
     }
-    
-    // Randomize confidence slightly
-    const conf = Math.floor(82 + Math.random() * 12);
-    confidenceText.textContent = conf + '%';
-    confidenceCircle.setAttribute('stroke-dasharray', \`\${conf}, 100\`);
-    
-    if (conf > 90) signalText.textContent = "STRONG BUY (ETH)";
-    else if (conf < 85) signalText.textContent = "ACCUMULATE (ETH)";
-    else signalText.textContent = "HOLD (ETH)";
-
-    // Add fake EAS attestation occasionally
-    if (Math.random() > 0.6) {
-        addEAS();
-    }
-    
-    eventIndex++;
-    setTimeout(addFeedItem, 3000 + Math.random() * 4000);
 }
 
-function addEAS() {
-    const uid = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
-    const el = document.createElement('div');
-    el.className = 'eas-item';
-    
-    const time = new Date().toLocaleTimeString();
-    el.innerHTML = `
-        <span>Attestation at ${time}</span>
-        \${uid.substring(0,14)}...\${uid.substring(uid.length-10)}
-    `;
-    
-    easList.prepend(el);
-    if(easList.children.length > 5) {
-        easList.removeChild(easList.lastChild);
-    }
-}
-
-// Start simulation
-setTimeout(addFeedItem, 1000);
-addEAS();
+// Start live polling every 5 seconds
+fetchDashboardFeed();
+setInterval(fetchDashboardFeed, 5000);
