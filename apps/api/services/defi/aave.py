@@ -98,13 +98,13 @@ class AaveService:
             amount_units = int(amount * (10 ** 6)) # USDC has 6 decimals
             
             # 1. Approve Aave Pool
-            approve_tx_data = usdc_contract.functions.approve(
-                Web3.to_checksum_address(self.pool_address), 
-                amount_units
-            ).build_transaction({
-                "from": Web3.to_checksum_address(wallet_address),
-                "nonce": 0, "gas": 0, "gasPrice": 0 # placeholders so build_transaction succeeds
-            })["data"]
+            approve_tx_data = usdc_contract.encodeABI(
+                fn_name="approve",
+                args=[
+                    Web3.to_checksum_address(self.pool_address), 
+                    amount_units
+                ]
+            )
             
             approve_req = {
                 "to": Web3.to_checksum_address(self.usdc_address),
@@ -122,15 +122,15 @@ class AaveService:
             # In a robust production environment, you would await the receipt.
             
             # 2. Supply to Aave
-            supply_tx_data = pool_contract.functions.supply(
-                Web3.to_checksum_address(self.usdc_address),
-                amount_units,
-                Web3.to_checksum_address(wallet_address),
-                0 # referral code
-            ).build_transaction({
-                "from": Web3.to_checksum_address(wallet_address),
-                "nonce": 0, "gas": 0, "gasPrice": 0 # placeholders
-            })["data"]
+            supply_tx_data = pool_contract.encodeABI(
+                fn_name="supply",
+                args=[
+                    Web3.to_checksum_address(self.usdc_address),
+                    amount_units,
+                    Web3.to_checksum_address(wallet_address),
+                    0 # referral code
+                ]
+            )
             
             supply_req = {
                 "to": Web3.to_checksum_address(self.pool_address),

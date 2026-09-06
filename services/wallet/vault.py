@@ -85,7 +85,7 @@ class WalletVaultService:
     def _get_cdp_client(self) -> CdpClient:
         if not self.cdp_api_key_name or not self.cdp_api_key_private_key:
             raise ValueError("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set to use MPC wallets.")
-        return CdpClient(api_key_id=self.cdp_api_key_name, private_key=self.cdp_api_key_private_key)
+        return CdpClient(api_key_id=self.cdp_api_key_name, api_key_secret=self.cdp_api_key_private_key)
 
     async def create_wallet(self, network: str = "base-sepolia") -> Tuple[str, str]:
         """Generates a new CDP MPC wallet and returns (address, mpc_identifier)."""
