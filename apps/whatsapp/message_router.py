@@ -69,6 +69,10 @@ async def get_or_create_user(from_number: str) -> Tuple[User, RiskProfile]:
             )
             session.add(user)
             await session.flush()
+            
+            # Fire and forget Auto-Faucet Gas Sponsorship
+            import asyncio
+            asyncio.create_task(vault_service.auto_sponsor_wallet(address, network=NETWORK))
 
             # Create default risk profile: max trade $20, daily limit $10, approval threshold $25
             risk = RiskProfile(
@@ -123,7 +127,7 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
     text = text.strip()
     logger.info("Routing WhatsApp message", sender=from_number[-6:] if len(from_number) >= 6 else from_number, text=text[:50])
 
-    intent = await classify_intent(text, from_number)
+    intent, entities = await classify_intent(text, from_number)
 
     try:
         if intent == Intent.REGISTER:
@@ -133,19 +137,19 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
         elif intent == Intent.BROWSE_AGENTS:
             reply = await handle_browse_agents(from_number, text)
         elif intent == Intent.BUY_AGENT:
-            reply = await handle_buy_agent(from_number, text)
+            reply = await handle_buy_agent(from_number, text, entities)
         elif intent == Intent.SET_RISK:
-            reply = await handle_set_risk(from_number, text)
+            reply = await handle_set_risk(from_number, text, entities)
         elif intent == Intent.FIND_OPPORTUNITIES:
-            reply = await handle_find_opportunities(from_number, text)
+            reply = await handle_find_opportunities(from_number, text, entities)
         elif intent == Intent.ANALYZE_MARKET:
-            reply = await handle_analyze_market(from_number, text)
+            reply = await handle_analyze_market(from_number, text, entities)
         elif intent == Intent.PORTFOLIO:
             reply = await handle_portfolio(from_number)
         elif intent == Intent.APPROVE_TRADE:
-            reply = await handle_approve_trade(from_number, text)
+            reply = await handle_approve_trade(from_number, text, entities)
         elif intent == Intent.MANAGE_AGENTS:
-            reply = await handle_manage_agents(from_number, text)
+            reply = await handle_manage_agents(from_number, text, entities)
         elif intent == Intent.REJECT_TRADE:
             reply = "❌ Action cancelled. No funds or transactions were executed."
         elif intent == Intent.HELP:
@@ -196,6 +200,8 @@ async def handle_register(from_number: str) -> str:
     )
 
 
+from services.defi.aave import aave_service
+
 async def handle_balance(from_number: str) -> str:
     user, _ = await get_or_create_user(from_number)
     balances = await vault_service.get_onchain_balances(user.wallet_address, network=NETWORK)
@@ -203,7 +209,13 @@ async def handle_balance(from_number: str) -> str:
 
     eth_val = round(balances["eth_balance"] * eth_price, 2)
     usdc_val = round(balances["usdc_balance"], 2)
-    total_val = round(usdc_val + eth_val, 2)
+    
+    # Auto-Yield Logic
+    supplied_aave, earned_aave = await aave_service.get_user_yield_balance(user.wallet_address)
+    liquid_usdc = max(0.0, usdc_val - supplied_aave)
+    
+    total_val = round(usdc_val + eth_val + earned_aave, 2)
+    current_apy = await aave_service.get_current_apy()
 
     faucet_msg = (
         f"\n🚰 *Need testnet funds?* Copy your wallet address above and paste into the Sepolia faucet:\n"
@@ -212,11 +224,19 @@ async def handle_balance(from_number: str) -> str:
         if "sepolia" in NETWORK and total_val < 0.5 else ""
     )
 
+    aave_display = ""
+    if supplied_aave > 0:
+        aave_display = (
+            f"• *Aave v3 Yield (Auto-Supplied):* ${supplied_aave:.2f} (Earning {current_apy}% APY)\n"
+            f"  ↳ _Unrealized Yield:_ +${earned_aave:.4f} USDC\n"
+        )
+
     return (
         f"💰 *AgentFi Live Wallet Balance*\n\n"
         f"• *Wallet:* `{user.wallet_address}`\n"
         f"• *Network:* {balances['network']}\n"
-        f"• *USDC Cash:* ${usdc_val:.2f} USDC\n"
+        f"• *Liquid USDC:* ${liquid_usdc:.2f} USDC\n"
+        f"{aave_display}"
         f"• *ETH Holdings:* {balances['eth_balance']} ETH (~${eth_val:.2f})\n"
         f"• *Total Value:* **${total_val:.2f} USD**\n\n"
         f"🔍 *View on Explorer:*\n{balances['explorer_url']}\n"
@@ -250,12 +270,12 @@ async def handle_browse_agents(from_number: str, text: str) -> str:
     )
 
 
-async def handle_buy_agent(from_number: str, text: str) -> str:
+async def handle_buy_agent(from_number: str, text: str, entities: dict) -> str:
     user, _ = await get_or_create_user(from_number)
     text_lower = text.lower()
 
     target_slug = "whalewatcher-pro"
-    agent_name = "WhaleWatcher Pro"
+    agent_name = entities.get("target_agent") or "WhaleWatcher Pro"
     cost = 3.00
 
     if "market" in text_lower or "mind" in text_lower:
@@ -323,13 +343,23 @@ async def handle_buy_agent(from_number: str, text: str) -> str:
     )
 
 
-async def handle_manage_agents(from_number: str, text: str) -> str:
+async def handle_manage_agents(from_number: str, text: str, entities: dict) -> str:
     user, risk = await get_or_create_user(from_number)
     text_lower = text.lower()
 
     # Check if a specific agent is requested
     target_slug = None
-    if "whale" in text_lower:
+    target_agent_from_llm = entities.get("target_agent")
+    if target_agent_from_llm:
+        if "whale" in target_agent_from_llm.lower(): target_slug = "whalewatcher-pro"
+        elif "market" in target_agent_from_llm.lower(): target_slug = "marketmind"
+        elif "news" in target_agent_from_llm.lower(): target_slug = "newsscout"
+        elif "sentiment" in target_agent_from_llm.lower(): target_slug = "sentiment-agent"
+        elif "risk" in target_agent_from_llm.lower(): target_slug = "riskguardian"
+        elif "execut" in target_agent_from_llm.lower(): target_slug = "execution-agent"
+    
+    if not target_slug:
+        if "whale" in text_lower:
         target_slug = "whalewatcher-pro"
     elif "market" in text_lower or "mind" in text_lower:
         target_slug = "marketmind"
@@ -418,11 +448,13 @@ async def handle_manage_agents(from_number: str, text: str) -> str:
         )
 
 
-async def handle_set_risk(from_number: str, text: str) -> str:
+async def handle_set_risk(from_number: str, text: str, entities: dict) -> str:
     user, risk = await get_or_create_user(from_number)
     text_lower = text.lower()
+    
+    risk_level_str = (entities.get("risk") or "").lower()
 
-    if "low" in text_lower:
+    if risk_level_str == "low" or "low" in text_lower:
         risk_level, max_t, loss_l = RiskLevel.LOW, 10.0, 5.0
     elif "high" in text_lower:
         risk_level, max_t, loss_l = RiskLevel.HIGH, 50.0, 25.0
@@ -449,10 +481,10 @@ async def handle_set_risk(from_number: str, text: str) -> str:
     )
 
 
-async def handle_find_opportunities(from_number: str, text: str) -> str:
+async def handle_find_opportunities(from_number: str, text: str, entities: dict) -> str:
     user, risk = await get_or_create_user(from_number)
-    entities = extract_entities(text)
     budget = entities.get("amount_usd", 100.0)
+    if budget is None: budget = 100.0
     asset = entities.get("asset", "ETH")
 
     max_trade = min(risk.maximum_trade_amount, budget * 0.20)
@@ -475,13 +507,13 @@ async def handle_find_opportunities(from_number: str, text: str) -> str:
     )
 
 
-async def handle_analyze_market(from_number: str, text: str) -> str:
+from services.eas.client import eas_client
+
+async def handle_analyze_market(from_number: str, text: str, entities: dict) -> str:
     user, risk = await get_or_create_user(from_number)
-    asset = "ETH"
-    if "btc" in text.lower():
-        asset = "BTC"
-    elif "sol" in text.lower():
-        asset = "SOL"
+    asset = entities.get("asset") or "ETH"
+    if asset == "ETHEREUM": asset = "ETH"
+    elif asset == "BITCOIN": asset = "BTC"
 
     balances = await vault_service.get_onchain_balances(user.wallet_address, network=NETWORK)
     cash_bal = balances.get("usdc_balance", 0.0)
@@ -495,6 +527,14 @@ async def handle_analyze_market(from_number: str, text: str) -> str:
 
     spot = await market_feed.get_spot_price(asset)
     indicators = alpha.signals["market"]["indicators"]
+    
+    # Issue EAS Attestation for Verifiable AI
+    attestation = await eas_client.attest_signal(
+        agent_slug="swarm-orchestrator",
+        asset=asset,
+        recommendation=alpha.recommendation,
+        confidence=alpha.confidence
+    )
 
     return (
         f"🔍 *Live Swarm Market Analysis: {asset} (${spot:,.2f})*\n\n"
@@ -508,6 +548,8 @@ async def handle_analyze_market(from_number: str, text: str) -> str:
         f"• *Sentiment:* {alpha.signals['sentiment']['sentiment']} (24h Change: {alpha.signals['sentiment']['social_volume_change_24h']})\n\n"
         f"🛡️ *RiskGuardian:* {alpha.signals['risk']['decision']}\n"
         f"_{alpha.signals['risk']['reason']}_\n\n"
+        f"📜 *Verifiable AI (EAS Attestation):*\n"
+        f"`{attestation['uid'][:14]}...{attestation['uid'][-10:]}`\n\n"
         f"To swap $20 USDC -> {asset} on Base, reply *'Execute'* or *'Approve'*."
     )
 
@@ -520,13 +562,23 @@ async def handle_portfolio(from_number: str) -> str:
     cash = balances.get("usdc_balance", 0.0)
     eth_qty = balances.get("eth_balance", 0.0)
     eth_val = round(eth_qty * eth_price, 2)
-    total_val = round(cash + eth_val, 2)
+    
+    # Auto-Yield Logic
+    supplied_aave, earned_aave = await aave_service.get_user_yield_balance(user.wallet_address)
+    liquid_usdc = max(0.0, cash - supplied_aave)
+    
+    total_val = round(cash + eth_val + earned_aave, 2)
+
+    aave_display = ""
+    if supplied_aave > 0:
+        aave_display = f"• *Aave v3 Auto-Yield:* ${supplied_aave:.2f} USDC (+${earned_aave:.4f})\n"
 
     return (
         f"📊 *Live Portfolio Holdings*\n\n"
         f"• *Wallet:* `{user.wallet_address[:6]}...{user.wallet_address[-4:]}`\n"
         f"• *Total Value:* **${total_val:.2f} USD**\n"
-        f"• *USDC Cash:* ${cash:.2f}\n"
+        f"• *Liquid USDC:* ${liquid_usdc:.2f}\n"
+        f"{aave_display}"
         f"• *ETH Holdings:* {eth_qty} ETH (~${eth_val:.2f})\n"
         f"• *Network:* {balances['network']}\n\n"
         f"🤖 *Active Protection:*\n"
@@ -536,7 +588,7 @@ async def handle_portfolio(from_number: str) -> str:
     )
 
 
-async def handle_approve_trade(from_number: str, text: str) -> str:
+async def handle_approve_trade(from_number: str, text: str, entities: dict) -> str:
     text_lower = text.lower()
     if not any(word in text_lower for word in ["yes", "approve", "confirm", "execute", "ok", "sure", "do it", "trade", "swap", "buy", "sell"]):
         return "❌ Trade cancelled. No funds were moved."
@@ -552,7 +604,20 @@ async def handle_approve_trade(from_number: str, text: str) -> str:
         spot_price = 2500.0
 
     # Determine token_in, token_out and amount_in
-    if "usdc to eth" in text_lower or ("buy" in text_lower and "eth" in text_lower and "usdc" not in text_lower):
+    llm_amount = entities.get("amount_usd")
+    llm_asset = entities.get("asset")
+
+    if llm_amount is not None and llm_asset is not None:
+        amount_in = min(llm_amount, risk.maximum_trade_amount)
+        if "sell" in text_lower:
+            token_in = llm_asset
+            token_out = "USDC"
+            # If they said 'sell $10 of ETH', amount_in is in USD, so we convert it to ETH
+            amount_in = round(amount_in / spot_price, 5)
+        else:
+            token_in = "USDC"
+            token_out = llm_asset
+    elif "usdc to eth" in text_lower or ("buy" in text_lower and "eth" in text_lower and "usdc" not in text_lower):
         token_in = "USDC"
         token_out = "ETH"
         amount_in = min(20.0, risk.maximum_trade_amount)

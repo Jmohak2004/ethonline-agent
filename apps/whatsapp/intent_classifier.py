@@ -1,18 +1,24 @@
 """
-AgentFi — Hybrid Intent Classifier & Entity Extractor
+AgentFi — LLM-Driven Intent Classifier & Entity Extractor
 Architecture:
-1. Fast Deterministic Regex & Pattern Matcher (0ms, 100% uptime, zero token cost)
-2. Entity Extraction (Amount $, Asset Symbol, Risk Level, Pack Name)
-3. LLM-Enhanced Classification Fallback (OpenAI / Gemini if configured)
-4. Heuristic Fallback to guarantee 100% uptime during live demos
+1. Gemini 1.5 Flash parsing (Structured JSON Output)
+2. Extracts conversational intents and entities robustly.
+3. Fallback to regex/heuristics if API fails.
 """
 import re
+import os
+import json
 from enum import Enum
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Tuple
 import structlog
+import google.generativeai as genai
 
 logger = structlog.get_logger()
 
+# Configure Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 class Intent(str, Enum):
     REGISTER = "REGISTER"
@@ -30,51 +36,17 @@ class Intent(str, Enum):
     HELP = "HELP"
     UNKNOWN = "UNKNOWN"
 
-
-# High-priority deterministic regex patterns (Instant 100% uptime)
+# High-priority deterministic regex patterns (Instant 100% uptime fallback)
 REGEX_PATTERNS: list[Tuple[str, Intent]] = [
-    # Help & Greeting
     (r"\b(help|commands|menu|start|what can you do)\b", Intent.HELP),
-
-    # Account & Balance
     (r"\b(create( my)? account|register|sign up|onboard)\b", Intent.REGISTER),
     (r"\b(balance|my wallet|funds|how much (money|usdc|eth|cash))\b", Intent.BALANCE),
-
-    # Trading, Swaps & Approvals
-    (r"\b(trade|swap|buy eth|sell eth|buy usdc|sell usdc|execute|do it|proceed|confirm|approve|sure|go ahead)\b", Intent.APPROVE_TRADE),
-    (r"\b(no|reject|cancel|stop|don't|do not execute)\b", Intent.REJECT_TRADE),
-
-    # Appoint & Manage Agents
-    (r"\b(appoint|hire|assign|delegate|assign permission|my agents|manage agents)\b", Intent.MANAGE_AGENTS),
-
-    # Risk Configuration
-    (r"\b(set (my )?risk|i am (low|medium|high) risk|risk level|daily limit|max trade)\b", Intent.SET_RISK),
-
-    # Market Opportunities & Budget Prompts (e.g. "I have $100. I want medium risk opportunities")
-    (r"\b(i have \$\d+|opportunities under|find( me)? (opportunities|trades|alpha))\b", Intent.FIND_OPPORTUNITIES),
-
-    # Analysis
-    (r"\b(analy[sz]e|what'?s happening with|why is (eth|btc)|show signals|market status)\b", Intent.ANALYZE_MARKET),
-
-    # Marketplace & Packs
-    (r"\b(buy|subscribe|purchase|activate pack|get whalewatcher|get newsscout)\b", Intent.BUY_AGENT),
-    (r"\b(browse|list agents|show agents|marketplace|agent packs|show packs)\b", Intent.BROWSE_AGENTS),
-    (r"\b(cancel subscription|unsubscribe)\b", Intent.CANCEL_SUBSCRIPTION),
-
-    # Portfolio
     (r"\b(portfolio|positions|p&?l|pnl|how much did i make|drawdown|performance)\b", Intent.PORTFOLIO),
 ]
 
-
 def extract_entities(text: str) -> Dict[str, Any]:
-    """
-    Extracts structured entities from conversational text using regex.
-    e.g. "I have $100. I want medium-risk crypto opportunities in ETH"
-    -> { "amount_usd": 100.0, "risk": "MEDIUM", "asset": "ETH" }
-    """
+    """Fallback entity extraction if LLM fails."""
     entities: Dict[str, Any] = {}
-
-    # Extract dollar amounts (e.g. $100, $20.50, 100 dollars)
     amount_match = re.search(r"\$(\d+(?:\.\d{1,2})?)|\b(\d+(?:\.\d{1,2})?)\s*(?:dollars|usdc)\b", text, re.IGNORECASE)
     if amount_match:
         val = amount_match.group(1) or amount_match.group(2)
@@ -82,8 +54,6 @@ def extract_entities(text: str) -> Dict[str, Any]:
             entities["amount_usd"] = float(val)
         except ValueError:
             pass
-
-    # Extract asset (ETH, BTC, SOL, UNI, LINK)
     asset_match = re.search(r"\b(ETH|ETHEREUM|BTC|BITCOIN|SOL|SOLANA|UNI|LINK|USDC)\b", text, re.IGNORECASE)
     if asset_match:
         entities["asset"] = asset_match.group(1).upper()
@@ -92,38 +62,75 @@ def extract_entities(text: str) -> Dict[str, Any]:
         elif entities["asset"] == "BITCOIN":
             entities["asset"] = "BTC"
     else:
-        entities["asset"] = "ETH"  # Default testnet asset
-
-    # Extract risk level
-    if re.search(r"\blow(?:-|\s)?risk\b", text, re.IGNORECASE):
-        entities["risk"] = "LOW"
-    elif re.search(r"\bhigh(?:-|\s)?risk\b", text, re.IGNORECASE):
-        entities["risk"] = "HIGH"
-    elif re.search(r"\bmedium(?:-|\s)?risk\b", text, re.IGNORECASE):
-        entities["risk"] = "MEDIUM"
-
+        entities["asset"] = "ETH"
     return entities
 
+async def parse_with_llm(text: str) -> Tuple[Intent, Dict[str, Any]]:
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not set")
+    
+    prompt = f"""
+    You are an intent classifier for a WhatsApp crypto trading bot. 
+    Analyze the user's message and extract the intent and entities.
+    
+    Valid Intents: {[i.value for i in Intent]}
+    
+    Rules for Intents:
+    - APPROVE_TRADE: User wants to execute a trade, buy a token, or swap (e.g. "Buy $10 of ETH", "Swap 50 USDC for BTC", "Execute", "Do it")
+    - BUY_AGENT: User wants to subscribe to or buy an AI agent (e.g. "Buy WhaleWatcher", "Get NewsScout")
+    - MANAGE_AGENTS: Appoint or manage an agent (e.g. "Appoint WhaleWatcher")
+    - ANALYZE_MARKET: Asking about market conditions or analysis (e.g. "Analyze ETH", "What's happening with BTC")
+    - FIND_OPPORTUNITIES: Asking the bot to find trades (e.g. "Find me trades under $50")
+    - BALANCE: Checking wallet balance.
+    - PORTFOLIO: Checking PnL or positions.
+    
+    Output JSON ONLY in this format, with no markdown formatting:
+    {{
+      "intent": "INTENT_NAME",
+      "amount_usd": 10.5, // float or null if not mentioned
+      "asset": "ETH", // string (symbol like ETH, BTC) or null
+      "target_agent": "WhaleWatcher", // string or null
+      "risk": "MEDIUM" // "LOW", "MEDIUM", "HIGH" or null
+    }}
+    
+    User Message: "{text}"
+    """
+    
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    res = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+    
+    try:
+        data = json.loads(res.text)
+        intent_str = data.get("intent", "UNKNOWN")
+        try:
+            intent = Intent(intent_str)
+        except ValueError:
+            intent = Intent.UNKNOWN
+            
+        return intent, data
+    except Exception as e:
+        logger.error("LLM Parse Error", error=str(e), text=res.text)
+        raise e
 
-async def classify_intent(text: str, from_number: str) -> Intent:
-    """
-    Hybrid intent classification:
-    1. Fast regex matching (guarantees 100% uptime & low latency)
-    2. LLM fallback if text is conversational
-    """
+async def classify_intent(text: str, from_number: str) -> Tuple[Intent, Dict[str, Any]]:
+    """Classifies intent using Gemini, falls back to regex."""
     text_clean = text.strip()
-
-    # Step 1: Regex Fast Path
-    for pattern, intent in REGEX_PATTERNS:
-        if re.search(pattern, text_clean, re.IGNORECASE):
-            logger.info("Hybrid parser matched regex", intent=intent, pattern=pattern)
-            return intent
-
-    # Step 2: Fallback Heuristics
-    text_lower = text_clean.lower()
-    if any(k in text_lower for k in ["eth", "btc", "crypto", "market", "trade"]):
-        return Intent.ANALYZE_MARKET
-    if any(k in text_lower for k in ["agent", "pack", "store", "shop"]):
-        return Intent.BROWSE_AGENTS
-
-    return Intent.UNKNOWN
+    
+    try:
+        intent, entities = await parse_with_llm(text_clean)
+        logger.info("LLM classified intent", intent=intent.value, entities=entities)
+        return intent, entities
+    except Exception as e:
+        logger.warning("Falling back to regex intent classification", error=str(e))
+        entities = extract_entities(text_clean)
+        for pattern, intent in REGEX_PATTERNS:
+            if re.search(pattern, text_clean, re.IGNORECASE):
+                return intent, entities
+        
+        text_lower = text_clean.lower()
+        if any(k in text_lower for k in ["eth", "btc", "crypto", "market", "trade"]):
+            return Intent.ANALYZE_MARKET, entities
+        if any(k in text_lower for k in ["agent", "pack", "store", "shop"]):
+            return Intent.BROWSE_AGENTS, entities
+            
+        return Intent.UNKNOWN, entities

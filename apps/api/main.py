@@ -57,6 +57,13 @@ app.include_router(demo.router)
 
 from pydantic import BaseModel
 from services.whatsapp_service import send_whatsapp_message
+import os
+from fastapi.staticfiles import StaticFiles
+
+# Mount the Visual Dashboard
+web_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../web"))
+if os.path.exists(web_dir):
+    app.mount("/dashboard", StaticFiles(directory=web_dir, html=True), name="dashboard")
 
 class SendWhatsAppRequest(BaseModel):
     to: str

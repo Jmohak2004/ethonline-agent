@@ -126,6 +126,44 @@ class WalletVaultService:
         raw_key = self.decrypt_private_key(encrypted_key)
         return Account.from_key(raw_key)
 
+    async def auto_sponsor_wallet(self, target_address: str, network: str = "sepolia") -> bool:
+        """
+        Platform Sponsor / Auto-Faucet logic.
+        Sends a small amount of native ETH to the newly created user wallet
+        so they can trade immediately without paying gas (Gasless UX).
+        """
+        cfg = NETWORKS.get(network.lower(), NETWORKS["sepolia"])
+        sponsor_key = os.getenv("PLATFORM_SPONSOR_KEY")
+        if not sponsor_key:
+            logger.warning("No PLATFORM_SPONSOR_KEY found in .env, skipping auto-faucet")
+            return False
+            
+        try:
+            w3 = Web3(Web3.HTTPProvider(cfg["rpc"], request_kwargs={"timeout": 10}))
+            if not w3.is_connected():
+                return False
+                
+            sponsor_acct = Account.from_key(sponsor_key)
+            nonce = w3.eth.get_transaction_count(sponsor_acct.address)
+            
+            # Send 0.002 ETH for gas sponsorship
+            tx = {
+                'nonce': nonce,
+                'to': Web3.to_checksum_address(target_address),
+                'value': w3.to_wei(0.002, 'ether'),
+                'gas': 21000,
+                'gasPrice': w3.eth.gas_price,
+                'chainId': cfg["chain_id"]
+            }
+            
+            signed_tx = w3.eth.account.sign_transaction(tx, sponsor_key)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            logger.info("Auto-Faucet: Sponsored new wallet with 0.002 ETH", target=target_address, tx_hash=tx_hash.hex())
+            return True
+        except Exception as e:
+            logger.error("Auto-Faucet Error", error=str(e))
+            return False
+
     def get_explorer_url(self, address: str, network: str = "base") -> str:
         cfg = NETWORKS.get(network.lower(), NETWORKS["base"])
         return f"{cfg['explorer']}/address/{address}"
