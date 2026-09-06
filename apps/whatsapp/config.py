@@ -1,34 +1,16 @@
 """
 AgentFi WhatsApp Service — Config
+Re-exports the centralized application settings to prevent namespace collisions and missing attributes.
 """
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+import sys
+import importlib.util
 
+_api_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../api/config.py"))
+_spec = importlib.util.spec_from_file_location("apps_api_config", _api_config_path)
+_api_config_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_api_config_mod)
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="../../.env", extra="ignore")
+Settings = _api_config_mod.Settings
+settings = _api_config_mod.settings
 
-    # Provider Selection: "twilio", "meta", or "mock"
-    WHATSAPP_PROVIDER: str = "twilio"
-
-    # Twilio Configuration
-    TWILIO_ACCOUNT_SID: str = ""
-    TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_NUMBER: str = "+14155238886"
-
-    # Meta Cloud API Configuration
-    WHATSAPP_ACCESS_TOKEN: str = ""
-    WHATSAPP_PHONE_NUMBER_ID: str = ""
-    WHATSAPP_VERIFY_TOKEN: str = "agentfi_webhook_verify_token"
-    WHATSAPP_API_VERSION: str = "v18.0"
-
-    GEMINI_API_KEY: str = ""
-    OPENAI_API_KEY: str = ""
-    LLM_PROVIDER: str = "gemini"
-
-    REDIS_URL: str = "redis://localhost:6379/0"
-    API_BASE_URL: str = "http://localhost:8000"
-
-    LOG_LEVEL: str = "INFO"
-
-
-settings = Settings()

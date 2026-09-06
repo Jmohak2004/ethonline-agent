@@ -4,6 +4,7 @@ Handles trade analysis, policy checks, Chainlink CRE confidential evaluations,
 Ledger clear-signing requests, and Uniswap v3 execution.
 """
 import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -119,7 +120,8 @@ async def request_trade(
     trade_req = TradeRequest(
         user_id=current_user.id,
         asset=payload.asset,
-        amount=payload.amount_usd,
+        amount_usd=payload.amount_usd,
+        direction="BUY",
         status=TradeStatus.PENDING,
         risk_score=cre_decision.risk_score,
         risk_decision=cre_decision.decision,
@@ -130,7 +132,7 @@ async def request_trade(
 
     # Case A: Human Approval Required (High-Risk Threshold Exceeded)
     if cre_decision.decision == "HUMAN_APPROVAL_REQUIRED":
-        trade_req.status = TradeStatus.NEEDS_APPROVAL
+        trade_req.status = TradeStatus.AWAITING_APPROVAL
         challenge = await ledger_service.create_signing_challenge(
             user_id=str(current_user.id),
             transaction_type="SWAP",
@@ -142,11 +144,8 @@ async def request_trade(
         approval_req = ApprovalRequest(
             user_id=current_user.id,
             trade_request_id=trade_req.id,
-            challenge_id=challenge["request_id"],
-            amount_usd=payload.amount_usd,
-            asset=payload.asset,
-            risk_score=cre_decision.risk_score,
-            reason=cre_decision.reason
+            reason=f"[{challenge['request_id']}] Trade ${payload.amount_usd:.2f} {payload.asset} — Risk score: {cre_decision.risk_score}. {cre_decision.reason}",
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
         )
         db.add(approval_req)
         await db.commit()
@@ -176,8 +175,17 @@ async def request_trade(
         token_out=payload.asset,
         amount_in=payload.amount_usd,
         recipient_wallet=current_user.wallet_address or "0xPrivyWallet",
+        encrypted_private_key=current_user.encrypted_private_key,
         max_slippage_percent=payload.max_slippage_percent
     )
+
+    if not swap_res.get("success"):
+        trade_req.status = TradeStatus.FAILED
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=swap_res.get("message", "Swap execution failed due to onchain limits or insufficient funds.")
+        )
 
     trade_req.status = TradeStatus.COMPLETED
 
@@ -185,13 +193,12 @@ async def request_trade(
     execution = TradeExecution(
         trade_request_id=trade_req.id,
         user_id=current_user.id,
-        token_in=payload.token_in,
-        token_out=payload.asset,
-        amount_in=payload.amount_usd,
-        amount_out=swap_res["amount_out"],
-        execution_price=swap_res["execution_price"],
+        asset=payload.asset,
+        amount_usd=payload.amount_usd,
+        amount_token=swap_res["amount_out"],
+        price_executed=swap_res["execution_price"],
         tx_hash=swap_res["tx_hash"],
-        status="COMPLETED"
+        status=TradeStatus.COMPLETED,
     )
     db.add(execution)
 
@@ -227,7 +234,7 @@ async def request_trade(
         "token_out": payload.asset,
         "amount_in": payload.amount_usd,
         "amount_out": swap_res["amount_out"],
-        "blockscout_url": f"https://eth-sepolia.blockscout.com/tx/{swap_res['tx_hash']}"
+        "explorer_url": f"{uniswap_service.explorer}/tx/{swap_res['tx_hash']}"
     }
 
 
@@ -238,9 +245,10 @@ async def approve_trade(
     db: AsyncSession = Depends(get_db)
 ):
     """Approve a high-risk trade that required human sign-off."""
+    # Search for the approval request by challenge_id embedded in the reason field
     stmt = select(ApprovalRequest).where(
         and_(
-            ApprovalRequest.challenge_id == payload.challenge_id,
+            ApprovalRequest.reason.contains(payload.challenge_id),
             ApprovalRequest.user_id == current_user.id
         )
     )
@@ -253,16 +261,68 @@ async def approve_trade(
     # Verify Ledger signature
     await ledger_service.verify_signature(payload.challenge_id, payload.signature or "")
 
-    # Execute swap
+    # Execute swap with actual trade parameters from TradeRequest if linked
+    trade_req = None
+    if approval.trade_request_id:
+        trade_stmt = select(TradeRequest).where(TradeRequest.id == approval.trade_request_id)
+        trade_res = await db.execute(trade_stmt)
+        trade_req = trade_res.scalar_one_or_none()
+
+    target_asset = trade_req.asset if trade_req else "ETH"
+    target_amount = trade_req.amount_usd if trade_req else 20.0
+
     swap_res = await uniswap_service.execute_swap(
         token_in="USDC",
-        token_out=approval.asset,
-        amount_in=approval.amount_usd,
-        recipient_wallet=current_user.wallet_address or "0xPrivyWallet"
+        token_out=target_asset,
+        amount_in=target_amount,
+        recipient_wallet=current_user.wallet_address or "0x0000000000000000000000000000000000000000",
+        encrypted_private_key=current_user.encrypted_private_key
     )
 
+    if not swap_res.get("success"):
+        if trade_req:
+            trade_req.status = TradeStatus.FAILED
+            await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=swap_res.get("message", "Swap execution failed due to onchain limits or insufficient funds.")
+        )
+
+    if trade_req:
+        trade_req.status = TradeStatus.COMPLETED
+
+        execution = TradeExecution(
+            trade_request_id=trade_req.id,
+            user_id=current_user.id,
+            asset=target_asset,
+            amount_usd=target_amount,
+            amount_token=swap_res["amount_out"],
+            price_executed=swap_res["execution_price"],
+            tx_hash=swap_res["tx_hash"],
+            status=TradeStatus.COMPLETED,
+        )
+        db.add(execution)
+
+        pos_stmt = select(PortfolioPosition).where(
+            and_(PortfolioPosition.user_id == current_user.id, PortfolioPosition.asset == target_asset)
+        )
+        pos_res = await db.execute(pos_stmt)
+        existing_pos = pos_res.scalar_one_or_none()
+
+        if existing_pos:
+            existing_pos.quantity += swap_res["amount_out"]
+        else:
+            new_pos = PortfolioPosition(
+                user_id=current_user.id,
+                asset=target_asset,
+                quantity=swap_res["amount_out"],
+                entry_price=swap_res["execution_price"],
+                current_price=swap_res["execution_price"]
+            )
+            db.add(new_pos)
+
     approval.is_approved = True
-    approval.resolved_at = time.time()
+    approval.approved_at = datetime.now(timezone.utc)
     await db.commit()
 
     return {
@@ -270,8 +330,11 @@ async def approve_trade(
         "status": "EXECUTED",
         "challenge_id": payload.challenge_id,
         "tx_hash": swap_res["tx_hash"],
+        "token_in": "USDC",
+        "token_out": target_asset,
+        "amount_in": target_amount,
         "amount_out": swap_res["amount_out"],
-        "blockscout_url": f"https://eth-sepolia.blockscout.com/tx/{swap_res['tx_hash']}"
+        "explorer_url": f"{uniswap_service.explorer}/tx/{swap_res['tx_hash']}"
     }
 
 
@@ -283,13 +346,19 @@ async def reject_trade(
 ):
     """Reject an approval challenge."""
     stmt = select(ApprovalRequest).where(
-        and_(ApprovalRequest.challenge_id == challenge_id, ApprovalRequest.user_id == current_user.id)
+        and_(ApprovalRequest.reason.contains(challenge_id), ApprovalRequest.user_id == current_user.id)
     )
     res = await db.execute(stmt)
     approval = res.scalar_one_or_none()
     if approval:
         approval.is_approved = False
-        approval.resolved_at = time.time()
+        approval.approved_at = datetime.now(timezone.utc)
+        if approval.trade_request_id:
+            trade_stmt = select(TradeRequest).where(TradeRequest.id == approval.trade_request_id)
+            trade_res = await db.execute(trade_stmt)
+            trade_req = trade_res.scalar_one_or_none()
+            if trade_req:
+                trade_req.status = TradeStatus.REJECTED
         await db.commit()
 
     return {"success": True, "message": "Trade rejected successfully"}
@@ -309,15 +378,14 @@ async def list_trades(
         "trades": [
             {
                 "id": str(t.id),
-                "token_in": t.token_in,
-                "token_out": t.token_out,
-                "amount_in": t.amount_in,
-                "amount_out": t.amount_out,
-                "execution_price": t.execution_price,
+                "asset": t.asset,
+                "amount_usd": t.amount_usd,
+                "amount_token": t.amount_token,
+                "price_executed": t.price_executed,
                 "tx_hash": t.tx_hash,
-                "status": t.status,
+                "status": t.status.value if hasattr(t.status, 'value') else t.status,
                 "created_at": t.created_at.isoformat() if t.created_at else None,
-                "blockscout_url": f"https://eth-sepolia.blockscout.com/tx/{t.tx_hash}"
+                "explorer_url": f"{uniswap_service.explorer}/tx/{t.tx_hash}" if t.tx_hash else None
             }
             for t in trades
         ]

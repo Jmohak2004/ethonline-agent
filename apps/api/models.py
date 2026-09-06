@@ -107,6 +107,7 @@ class PaymentStatus(str, PyEnum):
 class TradingMode(str, PyEnum):
     PAPER = "PAPER"
     TESTNET = "TESTNET"
+    LIVE = "LIVE"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -127,10 +128,11 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER)
     status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.PENDING_VERIFICATION)
 
-    # Wallet (managed by Privy — we only store the reference, never private keys)
+    # Wallet (managed by Privy or secure local vault)
     privy_user_id: Mapped[Optional[str]] = mapped_column(String(255))
     wallet_id: Mapped[Optional[str]] = mapped_column(String(255))
     wallet_address: Mapped[Optional[str]] = mapped_column(String(42))
+    encrypted_private_key: Mapped[Optional[str]] = mapped_column(Text)
 
     # Risk profile reference
     risk_profile_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("risk_profiles.id"))

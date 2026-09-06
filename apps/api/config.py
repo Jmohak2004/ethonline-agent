@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=("../../.env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     # ── Application ──────────────────────────────────────────────────────────
     APP_ENV: Literal["development", "testnet", "production"] = "development"
     APP_SECRET_KEY: str = "CHANGE-ME-IN-PRODUCTION"
-    TRADING_MODE: Literal["PAPER", "TESTNET"] = "PAPER"
+    TRADING_MODE: Literal["PAPER", "TESTNET", "LIVE"] = "PAPER"
     LOG_LEVEL: str = "INFO"
+    NETWORK: str = "base"
 
     # ── Database ─────────────────────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://agentfi:agentfi_dev_password@localhost:5432/agentfi"
@@ -71,6 +72,9 @@ class Settings(BaseSettings):
     # ── Chainlink CRE ─────────────────────────────────────────────────────────
     CHAINLINK_CRE_CONFIG: str = ""
     CHAINLINK_CRE_DON_ID: str = ""
+    CHAINLINK_CRE_ORG_ID: str = ""
+    CHAINLINK_CRE_WALLET: str = ""
+    CHAINLINK_CRE_GATEWAY: str = ""
 
     # ── Ledger ────────────────────────────────────────────────────────────────
     LEDGER_CONFIG: str = ""
@@ -90,12 +94,17 @@ class Settings(BaseSettings):
 
     # ── Bazantic ──────────────────────────────────────────────────────────────
     BAZANTIC_CONFIG: str = ""
+    BAZANTIC_JWT: str = ""
 
     # ── API URLs ──────────────────────────────────────────────────────────────
     API_BASE_URL: str = "http://localhost:8000"
     WHATSAPP_SERVICE_URL: str = "http://localhost:8001"
     WEB_URL: str = "http://localhost:3000"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
+
+    @property
+    def allowed_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
 
     # ── Platform ──────────────────────────────────────────────────────────────
     PLATFORM_FEE_PERCENT: int = 10
@@ -111,6 +120,10 @@ class Settings(BaseSettings):
     @property
     def is_paper_trading(self) -> bool:
         return self.TRADING_MODE == "PAPER"
+
+    @property
+    def is_live_trading(self) -> bool:
+        return self.TRADING_MODE == "LIVE"
 
 
 @lru_cache

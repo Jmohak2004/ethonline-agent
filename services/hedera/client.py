@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 import structlog
 import uuid
 import time
+import os
 from dataclasses import dataclass
 
 logger = structlog.get_logger()
@@ -26,12 +27,13 @@ class X402PaymentRequest:
 class HederaAgentService:
     def __init__(
         self,
-        account_id: Optional[str] = "0.0.4928172",
+        account_id: Optional[str] = None,
         private_key: Optional[str] = None,
-        network: str = "testnet"
+        network: Optional[str] = None
     ):
-        self.account_id = account_id
-        self.network = network
+        self.account_id = account_id or os.getenv("HEDERA_ACCOUNT_ID", "")
+        self.private_key = private_key or os.getenv("HEDERA_PRIVATE_KEY", "")
+        self.network = network or os.getenv("HEDERA_NETWORK", "testnet")
         self.topic_id = "0.0.5182901"  # AgentFi HCS Audit & Reputation Topic
 
     async def create_402_challenge(

@@ -8,7 +8,7 @@ from sqlalchemy import select
 import structlog
 
 from database import get_db
-from models import AgentPack, AgentPackItem, Agent
+from models import AgentPack, AgentPackItem, Agent, AgentStatus
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -57,7 +57,7 @@ STATIC_PACKS_FALLBACK = [
 @router.get("/packs")
 async def list_packs(db: AsyncSession = Depends(get_db)):
     """Retrieve all available bundled agent packs."""
-    stmt = select(AgentPack).where(AgentPack.is_active == True)
+    stmt = select(AgentPack).where(AgentPack.status == AgentStatus.PUBLISHED)
     res = await db.execute(stmt)
     packs = res.scalars().all()
 
@@ -73,7 +73,6 @@ async def list_packs(db: AsyncSession = Depends(get_db)):
                 "pricing_model": p.pricing_model.value if hasattr(p.pricing_model, "value") else str(p.pricing_model),
                 "rating": p.rating,
                 "active_users": p.active_users,
-                "discount_percentage": p.discount_percentage
             })
         return {"packs": results}
 

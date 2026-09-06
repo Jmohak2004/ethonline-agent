@@ -24,9 +24,8 @@ logger = structlog.get_logger()
 async def seed():
     logger.info("Starting AgentFi database seed...")
 
-    # Create tables if they do not exist
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    from database import init_db
+    await init_db()
 
     async with AsyncSessionLocal() as db:
         # Check if already seeded
@@ -179,8 +178,8 @@ async def seed():
                 performance_score=a_data["perf_score"],
                 reliability_score=98.5,
                 maximum_drawdown=-4.2,
-                status=AgentStatus.ACTIVE,
-                is_featured=True
+                status=AgentStatus.PUBLISHED,
+                capabilities=a_data["capabilities"],
             )
             db.add(agent)
             await db.flush()
@@ -194,9 +193,8 @@ async def seed():
                 risk_adjusted_score=92.0,
                 reliability_score=98.5,
                 user_rating_score=a_data["rating"] * 20.0,
-                total_tasks_completed=154,
-                successful_tasks_count=151,
-                failed_tasks_count=3,
+                completed_tasks=154,
+                failed_tasks=3,
                 uptime_percentage=99.9
             )
             db.add(rep)
@@ -215,8 +213,7 @@ async def seed():
             pricing_model=AgentPricingModel.SUBSCRIPTION,
             rating=4.8,
             active_users=2840,
-            is_active=True,
-            is_featured=True
+            status=AgentStatus.PUBLISHED,
         )
         db.add(alpha_pack)
         await db.flush()
@@ -234,8 +231,7 @@ async def seed():
             pricing_model=AgentPricingModel.SUBSCRIPTION,
             rating=4.9,
             active_users=1420,
-            is_active=True,
-            is_featured=False
+            status=AgentStatus.PUBLISHED,
         )
         db.add(beginner_pack)
         await db.flush()
@@ -251,11 +247,11 @@ async def seed():
             signal_type=SignalType.POTENTIAL_UPSIDE,
             confidence=0.81,
             risk_level=RiskLevel.MEDIUM,
-            evidence={
-                "whale_inflow_24h": "$18.4M",
-                "subgraph_source": "Uniswap v3 WETH/USDC",
-                "summary": "3 wallets holding >10k ETH accumulated $18.4M in past 24h"
-            },
+            evidence=[
+                "Whale inflow 24h: $18.4M",
+                "Subgraph source: Uniswap v3 WETH/USDC",
+                "3 wallets holding >10k ETH accumulated $18.4M in past 24h"
+            ],
             recommendation="POTENTIAL_OPPORTUNITY"
         )
         db.add(sig)

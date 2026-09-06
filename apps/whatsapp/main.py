@@ -102,7 +102,7 @@ def _verify_meta_signature(body: bytes, signature: str) -> bool:
     """Verify X-Hub-Signature-256 from Meta."""
     if not signature.startswith("sha256="):
         return False
-    expected = hmac.new(
+    expected = hmac.HMAC(
         settings.WHATSAPP_ACCESS_TOKEN.encode(),
         body,
         hashlib.sha256,

@@ -1,0 +1,15 @@
+bazantic jwt : eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6InByb2QtMjAyNjA2MDUtZWQyNTUxOS5wZW0ifQ.eyJyb2xlcyI6WyJkZXZlbG9wZXIiXSwic3ViIjoiMWIyODFkYTYtMGFiNC00MDg2LWFlOTItMDJiMDYxZTU2ZWY2IiwiaXNzIjoiYmF6YW50aWMtd2ViYXBwIiwiaWF0IjoxNzg4NjMxMzIxLCJleHAiOjE3ODk4NDA5MjEsImp0aSI6IjRmMTAwNTkyLWUxZDQtNGQ5Mi04MjJhLWJmNDA3OTUyMGU4OSJ9.bcO8RZp8MnR47tpsy-KPZX8hSqnQt9b37sbj-lKcSyfdb-Nrjrfti63RKWKCUTWS57aPdpj60aGpL3y8d1H-Ag
+uniswap api key : Ifox-mMd69avBi4RdLwlK8N17IRBoTlg64kFGVBeNTg
+npx skills add uniswap/uniswap-ai --skill swap-integration
+curl -sSL https://app.chain.link/cre/install.sh | bash
+
+cre login
+cre org id : org_ggJMKzu3DJzOM6Wv
+cre org add : 0x05d7e3b05654e96a80c22506dc780adf1a2938f0
+https://01.gateway.zone-a.cre.chain.link .... for add 
+
+HEDERA_ACCOUNT_ID=0.0.10378561
+HEDERA_PRIVATE_KEY=0x446d42da1443d01249a79e1cd41e9aaacfe798d5b2359862b06f17487f503449
+GRAPH_API_KEY=cdaae9d8f950253601a009955292ac7c
+PRIVY_APP_ID=cmtoph3sl00d30bjum0y2noc9
+PRIVY_APP_SECRET=privy_app_secret_zDYFzbQoTgytSwzUFUMhoX7BSkkUyyHwrCnRT2SLUo9hZEiAUSAZyLyogmWF5MyB191tvksbC34MEyXGKFo1dzj

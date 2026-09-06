@@ -12,17 +12,17 @@ from database import get_db
 from models import PortfolioPosition, PortfolioSnapshot, User, RiskProfile
 from services.auth_service import get_current_user
 
+from services.wallet.vault import WalletVaultService
+from services.market.live_feed import LiveMarketFeedService
+import os
+
 logger = structlog.get_logger()
 router = APIRouter()
 
-# Spot prices for valuation
-CURRENT_MARKET_PRICES = {
-    "ETH": 2650.00,
-    "WBTC": 64200.00,
-    "USDC": 1.00,
-    "UNI": 7.40,
-    "LINK": 11.80
-}
+vault_service = WalletVaultService()
+market_feed = LiveMarketFeedService()
+NETWORK = os.getenv("NETWORK", "base").lower()
+TRADING_MODE = os.getenv("TRADING_MODE", "LIVE").upper()
 
 
 @router.get("/")
@@ -30,7 +30,7 @@ async def get_portfolio(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Retrieve all open positions, cash balance, and total valuation."""
+    """Retrieve all open positions, live onchain cash balance, and total valuation."""
     stmt = select(PortfolioPosition).where(PortfolioPosition.user_id == current_user.id)
     res = await db.execute(stmt)
     positions = res.scalars().all()
@@ -39,7 +39,7 @@ async def get_portfolio(
     formatted_positions = []
 
     for pos in positions:
-        spot = CURRENT_MARKET_PRICES.get(pos.asset, pos.current_price or 1.0)
+        spot = await market_feed.get_spot_price(pos.asset)
         pos_value = pos.quantity * spot
         unrealized = pos_value - (pos.quantity * pos.entry_price)
         total_positions_value += pos_value
@@ -49,14 +49,22 @@ async def get_portfolio(
             "asset": pos.asset,
             "quantity": pos.quantity,
             "entry_price": pos.entry_price,
-            "current_price": spot,
+            "current_price": round(spot, 2),
             "value_usd": round(pos_value, 2),
             "unrealized_pnl_usd": round(unrealized, 2),
             "unrealized_pnl_percent": round((unrealized / (pos.quantity * pos.entry_price)) * 100, 2) if pos.entry_price > 0 else 0.0,
             "agent_id": str(pos.agent_id) if pos.agent_id else None
         })
 
-    cash_balance = 68.40  # Default USDC liquid cash
+    cash_balance = 0.0
+    if current_user.wallet_address:
+        balances = await vault_service.get_onchain_balances(current_user.wallet_address, network=NETWORK)
+        cash_balance = balances.get("usdc_balance", 0.0)
+        eth_bal = balances.get("eth_balance", 0.0)
+        if eth_bal > 0:
+            eth_spot = await market_feed.get_spot_price("ETH")
+            total_positions_value += (eth_bal * eth_spot)
+
     total_val = round(cash_balance + total_positions_value, 2)
 
     return {
@@ -66,10 +74,9 @@ async def get_portfolio(
         "cash_balance_usdc": cash_balance,
         "positions_count": len(formatted_positions),
         "positions": formatted_positions,
-        "daily_pnl_usd": 8.40,
-        "daily_pnl_percent": 8.4,
-        "mode": "PAPER_TRADING"
+        "mode": TRADING_MODE
     }
+
 
 
 @router.get("/performance")

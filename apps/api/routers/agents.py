@@ -62,25 +62,25 @@ class ReviewSchema(BaseModel):
 
 
 class AgentResponse(BaseModel):
-    id: str
+    id: uuid.UUID | str
     name: str
     slug: str
-    ens_name: Optional[str]
+    ens_name: Optional[str] = None
     description: str
     category: str
-    version: str
+    version: str = "1.0.0"
     price: float
     pricing_model: str
     risk_level: str
     rating: float
-    rating_count: int
-    active_users: int
-    performance_score: float
-    reliability_score: float
-    maximum_drawdown: float
+    rating_count: int = 0
+    active_users: int = 0
+    performance_score: float = 0.0
+    reliability_score: float = 0.0
+    maximum_drawdown: float = 0.0
     status: str
-    capabilities: list
-    tags: list
+    capabilities: list = []
+    tags: list = []
 
     class Config:
         from_attributes = True
