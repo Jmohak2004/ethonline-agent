@@ -1,0 +1,21 @@
+{
+  "name": "mastra-agents",
+  "version": "1.0.0",
+  "description": "Mastra AI agents for AgentFi",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@mastra/core": "^0.1.33",
+    "zod": "^3.23.8",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "@types/node": "^22.5.4",
+    "ts-node": "^10.9.2"
+  }
+}
