@@ -1,12 +1,14 @@
 """
 AgentFi — Demo Router
-Provides 1-click deterministic end-to-end demonstrations of all 4 key scenarios specified in prompt.txt:
+Provides 1-click demonstrations of the core agent and protocol scenarios:
 1. Demo 1: Alpha Opportunity + Uniswap Testnet Swap
 2. Demo 2: Agent Marketplace Subscription + Arc USDC Settlement
 3. Demo 3: Hedera x402 Autonomous Agent-to-Agent Payment
 4. Demo 4: High-Risk Threshold Exceeded -> Ledger Clear-Signing Approval
+5. Demo 5: Live ETH Watchtower
+6. Demo 6: Risk-Gated ETH Paper Trade
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import structlog
 import uuid
 import time
@@ -34,6 +36,109 @@ arc_service = ArcSettlementService()
 cre_service = ChainlinkCRERiskService()
 ledger_service = LedgerSecurityService()
 uniswap_service = UniswapService()
+
+@router.get("/agent-watch")
+async def run_agent_watch(asset: str = "ETH"):
+    """Run the intelligence agents without placing an order."""
+    signal = await orchestrator.generate_alpha_recommendation(
+        asset=asset,
+        target_budget_usd=0.0,
+        portfolio_value_usd=100.0,
+    )
+    signals = signal.signals
+    return {
+        "demo": "Live Agent Watchtower",
+        "asset": signal.asset,
+        "status": "WATCHING",
+        "agents": [
+            {
+                "name": "NewsScout",
+                "role": "Market catalysts",
+                "status": "COMPLETE",
+                "signal": signals["news"]["signal"],
+                "confidence": signals["news"]["confidence"],
+                "evidence": signals["news"]["reasoning"],
+            },
+            {
+                "name": "MarketMind",
+                "role": "Technical indicators",
+                "status": "COMPLETE",
+                "signal": signals["market"]["trend"],
+                "confidence": signals["market"]["confidence"],
+                "evidence": signals["market"]["indicators"],
+            },
+            {
+                "name": "WhaleWatcher Pro",
+                "role": "Onchain flow monitoring",
+                "status": "COMPLETE",
+                "signal": signals["whale"]["whale_activity"],
+                "confidence": signals["whale"]["confidence"],
+                "evidence": signals["whale"]["evidence"],
+            },
+            {
+                "name": "SentimentAgent",
+                "role": "Market sentiment",
+                "status": "COMPLETE",
+                "signal": signals["sentiment"]["sentiment"],
+                "confidence": signals["sentiment"]["confidence"],
+                "evidence": [signals["sentiment"]["social_volume_change_24h"]],
+            },
+        ],
+        "consensus": {
+            "recommendation": signal.recommendation,
+            "composite_score": signal.composite_score,
+            "confidence": signal.confidence,
+            "explainability": signal.explainability,
+        },
+    }
+
+
+@router.post("/agent-trade-plan")
+async def run_agent_trade_plan(asset: str = "ETH", amount_usd: float = 20.0):
+    """Create a risk-gated paper order for a safe trading demonstration."""
+    if amount_usd <= 0:
+        raise HTTPException(status_code=422, detail="amount_usd must be greater than zero")
+
+    signal = await orchestrator.generate_alpha_recommendation(
+        asset=asset,
+        target_budget_usd=amount_usd,
+        portfolio_value_usd=100.0,
+    )
+    risk = signal.signals["risk"]
+    risk_approved = risk["decision"] == "APPROVED"
+    consensus_approved = signal.recommendation == "POTENTIAL_OPPORTUNITY"
+    return {
+        "demo": "Risk-Gated Paper Trade",
+        "asset": signal.asset,
+        "amount_usd": amount_usd,
+        "mode": "PAPER",
+        "order": {
+            "status": (
+                "READY_TO_SIMULATE"
+                if risk_approved and consensus_approved
+                else "WAITING_FOR_CONSENSUS"
+                if risk_approved
+                else "BLOCKED_BY_RISK"
+            ),
+            "side": "BUY",
+            "route": "USDC -> Uniswap v3 -> " + signal.asset,
+            "slippage_guard": "0.50%",
+            "broadcast": False,
+        },
+        "agent_consensus": signal.model_dump(),
+        "risk_gate": risk,
+        "message": (
+            f"Paper order approved for ${amount_usd:.2f} of {signal.asset}."
+            if risk_approved and consensus_approved
+            else (
+                f"RiskGuardian approved the trade, but the market consensus is "
+                f"{signal.recommendation}; no order was created."
+                if risk_approved
+                else f"Paper order blocked by RiskGuardian: {risk['reason']}"
+            )
+        ),
+    }
+
 
 @router.post("/scenario-1-alpha-trade")
 async def run_scenario_1_alpha_trade(asset: str = "ETH", budget: float = 20.0):

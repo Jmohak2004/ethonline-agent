@@ -117,7 +117,7 @@ export default function DocsPage() {
             <h2 className="text-base font-black text-[#1E1611]">Multi-Agent Consensus Formula</h2>
           </div>
           <p className="text-xs text-[#4D382C]">
-            Financial advice requires diversified data streams. AgentFi aggregates 5 specialized sources:
+            Financial advice requires diversified data streams. Gotrade aggregates 5 specialized sources:
           </p>
           <div className="p-3 bg-[#EFEBE1] font-mono text-xs text-[#1E1611] font-bold border-2 border-[#1E1611]">
             Composite Score = 25% MarketMind + 25% WhaleWatcher + 20% NewsScout + 15% Sentiment + 15% RiskGuardian

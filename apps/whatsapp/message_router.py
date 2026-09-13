@@ -144,6 +144,10 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
             reply = await handle_find_opportunities(from_number, text, entities)
         elif intent == Intent.ANALYZE_MARKET:
             reply = await handle_analyze_market(from_number, text, entities)
+        elif intent == Intent.WATCH_MARKET:
+            reply = await handle_watch_market(text, entities)
+        elif intent == Intent.PAPER_TRADE:
+            reply = await handle_paper_trade(text, entities)
         elif intent == Intent.PORTFOLIO:
             reply = await handle_portfolio(from_number)
         elif intent == Intent.APPROVE_TRADE:
@@ -512,6 +516,72 @@ async def handle_find_opportunities(from_number: str, text: str, entities: dict)
     )
 
 
+async def handle_watch_market(text: str, entities: dict) -> str:
+    """Run a live, read-only snapshot from the market agents."""
+    asset = entities.get("asset") or "ETH"
+    alpha = await orchestrator.generate_alpha_recommendation(
+        asset=asset,
+        target_budget_usd=0.0,
+        portfolio_value_usd=100.0,
+    )
+    market = alpha.signals["market"]
+    whale = alpha.signals["whale"]
+    news = alpha.signals["news"]
+    sentiment = alpha.signals["sentiment"]
+    return (
+        f"👁️ *Agent Watchtower: {alpha.asset}*\n\n"
+        f"• *Status:* WATCHING (read-only)\n"
+        f"• *Consensus:* {alpha.recommendation.replace('_', ' ')}\n"
+        f"• *Composite Score:* {alpha.composite_score:.3f}\n\n"
+        f"🤖 *Agent Signals*\n"
+        f"• *MarketMind:* {market['trend']} — RSI {market['indicators'].get('RSI_14')}\n"
+        f"• *WhaleWatcher:* {whale['whale_activity']}\n"
+        f"• *NewsScout:* {news['signal']}\n"
+        f"• *SentimentAgent:* {sentiment['sentiment']} ({sentiment['social_volume_change_24h']})\n\n"
+        f"🛡️ *RiskGuardian:* {alpha.signals['risk']['decision']}\n"
+        f"_{alpha.explainability['risks']}_\n\n"
+        f"No trade was placed. Reply *'paper trade $20 {alpha.asset}'* to preview a safe simulation."
+    )
+
+
+async def handle_paper_trade(text: str, entities: dict) -> str:
+    """Preview a trade only after agent consensus and risk checks; never broadcasts."""
+    asset = entities.get("asset") or "ETH"
+    amount = entities.get("amount_usd") or 20.0
+    if amount <= 0:
+        return "⚠️ Please provide a trade amount greater than zero, for example *paper trade $20 ETH*."
+
+    alpha = await orchestrator.generate_alpha_recommendation(
+        asset=asset,
+        target_budget_usd=amount,
+        portfolio_value_usd=100.0,
+    )
+    risk = alpha.signals["risk"]
+    risk_approved = risk["decision"] == "APPROVED"
+    consensus_approved = alpha.recommendation == "POTENTIAL_OPPORTUNITY"
+    if risk_approved and consensus_approved:
+        status = "READY TO SIMULATE"
+        message = f"Paper order approved for ${amount:.2f} of {alpha.asset}."
+    elif risk_approved:
+        status = "WAITING FOR CONSENSUS"
+        message = f"RiskGuardian approved, but agents recommend {alpha.recommendation.replace('_', ' ')}."
+    else:
+        status = "BLOCKED BY RISK"
+        message = f"RiskGuardian blocked the paper order: {risk['reason']}"
+
+    return (
+        f"🧪 *Paper Trade Preview*\n\n"
+        f"• *Asset:* {alpha.asset}\n"
+        f"• *Amount:* ${amount:.2f}\n"
+        f"• *Route:* USDC → Uniswap v3 → {alpha.asset}\n"
+        f"• *Status:* {status}\n"
+        f"• *Slippage Guard:* 0.50%\n"
+        f"• *Broadcast:* ❌ No real transaction\n\n"
+        f"_{message}_\n\n"
+        f"Reply *'watch {alpha.asset}'* for the latest read-only agent snapshot."
+    )
+
+
 from services.eas.client import eas_client
 
 async def handle_analyze_market(from_number: str, text: str, entities: dict) -> str:
@@ -710,6 +780,8 @@ async def get_help_message() -> str:
         "Talk naturally or use any of these commands:\n\n"
         "• *\"balance\"* — Check your onchain wallet address, holdings & faucet links\n"
         "• *\"analyze ETH\"* — Run the 5-agent AI swarm with live indicators\n"
+        "• *\"watch ETH\"* — Get a read-only live agent watchtower snapshot\n"
+        "• *\"paper trade $20 ETH\"* — Preview a risk-gated trade without broadcasting\n"
         "• *\"trade\"* or *\"swap\"* — Execute an onchain swap via Uniswap v3\n"
         "• *\"appoint WhaleWatcher\"* — Appoint agent & grant scoped session permissions\n"
         "• *\"buy WhaleWatcher\"* — Subscribe to agent via Arc USDC settlement\n"

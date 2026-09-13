@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="w-7 h-7 rounded-md bg-[#1E1611] flex items-center justify-center border-2 border-[#1E1611] shadow-[2px_2px_0px_#7A543A]">
               <Cpu size={14} className="text-[#F7F4EE]" />
             </div>
-            <span className="font-extrabold text-base text-[#1E1611] tracking-tight">AgentFi</span>
+            <span className="font-extrabold text-base text-[#1E1611] tracking-tight">Gotrade</span>
           </Link>
           <p className="text-[#5E5045] leading-relaxed">
             AI agent economy in WhatsApp. Verified onchain intelligence, automated risk caps, and USDC settlement.
@@ -117,7 +117,7 @@ export default function Footer() {
           Live testnet execution. AI predictions are probabilistic. All trades bound to limits.
         </div>
         <div>
-          © 2026 AgentFi. Built for ETHOnline 2026.
+          © 2026 Gotrade. Built for ETHOnline 2026.
         </div>
       </div>
     </footer>

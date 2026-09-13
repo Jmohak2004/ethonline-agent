@@ -1,6 +1,6 @@
-# AgentFi — REST API Documentation
+# Gotrade — REST API Documentation
 
-The AgentFi API is built with FastAPI and runs on port 8000. It provides 37 endpoints covering authentication, agent discovery, risk profiles, subscriptions, portfolios, signals, trades, and deterministic demo scenarios.
+The Gotrade API is built with FastAPI and runs on port 8000. It provides endpoints covering authentication, agent discovery, risk profiles, subscriptions, portfolios, signals, trades, and deterministic demo scenarios.
 
 ---
 

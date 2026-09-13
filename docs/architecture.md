@@ -1,8 +1,8 @@
-# AgentFi — Architecture & Technical Specifications
+# Gotrade — Architecture & Technical Specifications
 
 > **Tagline:** "Your AI agent economy, directly in WhatsApp."
 
-AgentFi is a WhatsApp-native AI agent economy where users can discover, compose, subscribe to, and manage autonomous financial research and execution agents without ever dealing with seed phrases or MetaMask.
+Gotrade is a WhatsApp-native AI agent economy where users can discover, compose, subscribe to, and manage autonomous financial research and execution agents without ever dealing with seed phrases or MetaMask.
 
 ---
 
@@ -79,7 +79,7 @@ NewsScout    MarketMind     WhaleWatcher   Sentiment     RiskGuardian
 
 ## 3. GasRefuel Architecture (`contracts/GasRefuel.sol`)
 
-To maintain the fundamental invariant that **users never see gas errors** ("Your EVM smart account has insufficient gas"), AgentFi incorporates an autonomous refuel station:
+To maintain the fundamental invariant that **users never see gas errors** ("Your EVM smart account has insufficient gas"), Gotrade incorporates an autonomous refuel station:
 - **Auto-Refuels:** Detects when an active embedded wallet drops below `0.001 ETH` on testnet.
 - **Rate-Limiting:** Enforces an automatic 12-hour cooldown and a `0.015 ETH/day` limit per user.
 - **Invisible Sponsorship:** Ensures user transactions on Uniswap or smart contracts never stall due to missing network fees.
@@ -88,7 +88,7 @@ To maintain the fundamental invariant that **users never see gas errors** ("Your
 
 ## 4. WhatsApp Gateway Architecture (Twilio vs Meta)
 
-AgentFi features a dual-provider webhook gateway in `apps/whatsapp`:
+Gotrade features a dual-provider webhook gateway in `apps/whatsapp`:
 - **Twilio Sandbox (`/webhook/twilio`):** Allows any user or judge to immediately test by sending a WhatsApp message to `+1 415 523 8886` without Facebook Business Verification delays.
 - **Meta Cloud API (`/webhook/meta`):** Direct enterprise-tier WhatsApp Business Graph API for production deployment.
 - **Hybrid Parser:** Fast regex entity extraction (100% uptime) + LLM conversational fallback.

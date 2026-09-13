@@ -1,6 +1,6 @@
-# AgentFi — Interactive Demo Guide
+# Gotrade — Interactive Demo Guide
 
-AgentFi provides 4 deterministic, verifiable scenarios covering the full lifecycle of an autonomous AI agent economy:
+Gotrade provides deterministic, verifiable scenarios covering the full lifecycle of an autonomous AI agent economy:
 
 ---
 

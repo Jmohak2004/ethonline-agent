@@ -1,6 +1,6 @@
-# AgentFi — AI Agents Specification
+# Gotrade — AI Agents Specification
 
-AgentFi is built around a collaborative multi-agent architecture where individual agents focus on specialized data signals rather than relying on a single monolithic LLM.
+Gotrade is built around a collaborative multi-agent architecture where individual agents focus on specialized data signals rather than relying on a single monolithic LLM.
 
 ---
 

@@ -2,7 +2,7 @@
   "name": "agentfi",
   "version": "1.0.0",
   "private": true,
-  "description": "AgentFi — Your AI agent economy, directly in WhatsApp.",
+  "description": "Gotrade — Your AI trading team, directly in WhatsApp.",
   "workspaces": [
     "apps/*",
     "packages/*"

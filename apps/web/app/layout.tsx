@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentFi — Your AI Agent Economy",
+  title: "Gotrade — Your AI Trading Team",
   description: "Discover, subscribe to, and manage AI agents that research financial markets, track whales, and execute trades — all through WhatsApp. Powered by Web3, invisible to users.",
   keywords: "AI agents, DeFi, WhatsApp, crypto, automated trading, agent marketplace, Web3",
-  authors: [{ name: "AgentFi" }],
+  authors: [{ name: "Gotrade" }],
   openGraph: {
-    title: "AgentFi — Your AI Agent Economy",
+    title: "Gotrade — Your AI Trading Team",
     description: "AI agents that work for you, paid in crypto, accessible via WhatsApp.",
     type: "website",
   },

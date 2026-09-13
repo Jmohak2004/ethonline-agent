@@ -67,7 +67,7 @@ function Navbar() {
           <div className="w-8 h-8 rounded-lg bg-[#1E1611] flex items-center justify-center border-2 border-[#1E1611] shadow-[2px_2px_0px_#7A543A]">
             <Cpu size={15} className="text-[#F7F4EE]" />
           </div>
-          <span className="font-extrabold text-lg text-[#1E1611] tracking-tight">AgentFi</span>
+          <span className="font-extrabold text-lg text-[#1E1611] tracking-tight">Gotrade</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1.5">
@@ -216,7 +216,7 @@ function WhatsAppDemo() {
                 AF
               </div>
               <div>
-                <span className="text-xs font-bold block">AgentFi AI</span>
+                <span className="text-xs font-bold block">Gotrade AI</span>
                 <span className="text-[10px] text-[#DCD4C4] font-mono">WhatsApp Verified</span>
               </div>
             </div>

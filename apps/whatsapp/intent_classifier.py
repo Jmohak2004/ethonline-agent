@@ -28,6 +28,8 @@ class Intent(str, Enum):
     CANCEL_SUBSCRIPTION = "CANCEL_SUBSCRIPTION"
     SET_RISK = "SET_RISK"
     ANALYZE_MARKET = "ANALYZE_MARKET"
+    WATCH_MARKET = "WATCH_MARKET"
+    PAPER_TRADE = "PAPER_TRADE"
     FIND_OPPORTUNITIES = "FIND_OPPORTUNITIES"
     PORTFOLIO = "PORTFOLIO"
     APPROVE_TRADE = "APPROVE_TRADE"
@@ -42,6 +44,8 @@ REGEX_PATTERNS: list[Tuple[str, Intent]] = [
     (r"\b(create( my)? account|register|sign up|onboard)\b", Intent.REGISTER),
     (r"\b(balance|my wallet|funds|how much (money|usdc|eth|cash))\b", Intent.BALANCE),
     (r"\b(portfolio|positions|p&?l|pnl|how much did i make|drawdown|performance)\b", Intent.PORTFOLIO),
+    (r"\b(watch|monitor|track|keep an eye on)\b.*\b(eth|ethereum|btc|bitcoin|market|price)\b", Intent.WATCH_MARKET),
+    (r"\b(paper trade|simulate|simulation|dry run|preview trade)\b", Intent.PAPER_TRADE),
 ]
 
 def extract_entities(text: str) -> Dict[str, Any]:
@@ -81,6 +85,8 @@ async def parse_with_llm(text: str) -> Tuple[Intent, Dict[str, Any]]:
     - BUY_AGENT: User wants to subscribe to or buy an AI agent (e.g. "Buy WhaleWatcher", "Get NewsScout", "Subscribe to agent")
     - MANAGE_AGENTS: Appoint or manage an agent (e.g. "Appoint WhaleWatcher", "my agents")
     - ANALYZE_MARKET: Asking about market conditions or analysis (e.g. "Analyze ETH", "What's happening with BTC")
+    - WATCH_MARKET: User wants continuous-style monitoring or a live watch snapshot (e.g. "Watch ETH", "Monitor ETH")
+    - PAPER_TRADE: User wants a safe simulated trade or trade preview (e.g. "Paper trade $20 ETH", "Simulate buying ETH")
     - FIND_OPPORTUNITIES: Asking the bot to find trades (e.g. "Find me trades under $50")
     - BALANCE: Checking wallet balance.
     - PORTFOLIO: Checking PnL or positions.
@@ -137,6 +143,12 @@ async def classify_intent(text: str, from_number: str) -> Tuple[Intent, Dict[str
             return Intent.BUY_AGENT, entities
         if "appoint" in text_lower or "my agents" in text_lower:
             return Intent.MANAGE_AGENTS, entities
+        if any(k in text_lower for k in ["paper trade", "simulate", "simulation", "dry run", "preview trade"]):
+            return Intent.PAPER_TRADE, entities
+        if any(k in text_lower for k in ["watch", "monitor", "track"]) and any(
+            k in text_lower for k in ["eth", "ethereum", "btc", "bitcoin", "market", "price"]
+        ):
+            return Intent.WATCH_MARKET, entities
             
         if any(k in text_lower for k in ["eth", "btc", "crypto", "market", "trade"]):
             return Intent.ANALYZE_MARKET, entities

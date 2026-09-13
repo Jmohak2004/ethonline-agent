@@ -1,4 +1,4 @@
-# AgentFi — Security Architecture & Financial Guardrails
+# Gotrade — Security Architecture & Financial Guardrails
 
 > **Core Philosophy:** "The LLM is an untrusted intent generator. Never expose private keys, raw wallet credentials, or unrestricted execution authority to AI."
 

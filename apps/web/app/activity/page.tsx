@@ -40,7 +40,7 @@ export default function ActivityPage() {
         id: `${event.timestamp}-${index}`,
         title: event.type === "buy" ? "On-chain buy signal" : event.type === "sell" ? "On-chain sell signal" : "Agent activity",
         description: event.msg,
-        agent: event.eas ? "EAS-attested signal" : "AgentFi",
+        agent: event.eas ? "EAS-attested signal" : "Gotrade",
         status: event.eas ? "ATTESTED" : "RECORDED",
         time: new Date(event.time).toLocaleString(),
         tag: event.eas ? "EAS" : "Audit Trail",

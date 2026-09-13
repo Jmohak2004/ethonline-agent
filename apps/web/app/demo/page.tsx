@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Play, Bot, ArrowLeft, CheckCircle, Shield, Zap, Lock,
-  RefreshCw, MessageSquare, Terminal, Server, ArrowRight
+  RefreshCw, MessageSquare, Terminal, Server, ArrowRight, Eye, Activity
 } from "lucide-react";
 import AppHeader from "@/app/components/AppHeader";
 import UniversalFooter from "@/app/components/Footer";
@@ -21,14 +21,16 @@ export default function DemoPlaygroundPage() {
 
     try {
       let endpoint = "";
-      if (scenarioNumber === 1) endpoint = "/api/demo/scenario-1-alpha-trade";
-      else if (scenarioNumber === 2) endpoint = "/api/demo/scenario-2-marketplace-subscribe";
-      else if (scenarioNumber === 3) endpoint = "/api/demo/scenario-3-hedera-x402-payment";
-      else if (scenarioNumber === 4) endpoint = "/api/demo/scenario-4-ledger-high-risk-approval";
+      if (scenarioNumber === 0) endpoint = "/demo/agent-watch";
+      else if (scenarioNumber === 5) endpoint = "/demo/agent-trade-plan";
+      else if (scenarioNumber === 1) endpoint = "/demo/scenario-1-alpha-trade";
+      else if (scenarioNumber === 2) endpoint = "/demo/scenario-2-marketplace-subscribe";
+      else if (scenarioNumber === 3) endpoint = "/demo/scenario-3-hedera-x402-payment";
+      else if (scenarioNumber === 4) endpoint = "/demo/scenario-4-ledger-high-risk-approval";
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/demo${endpoint.replace("/api/demo", "")}`, {
-        method: "POST"
+      const res = await fetch(`${apiUrl}${endpoint}`, {
+        method: scenarioNumber === 0 ? "GET" : "POST",
       });
       if (res.ok) {
         const data = await res.json();
@@ -66,12 +68,44 @@ export default function DemoPlaygroundPage() {
             Interactive Demo Runner
           </h1>
           <p className="mt-1 text-sm text-[#4D382C]">
-            Execute the 4 core workflows with 1 click to test agent orchestration, risk caps, and onchain settlement.
+            Watch the agents reason about ETH, then test a risk-gated paper trade before using live settlement.
           </p>
         </div>
 
-        {/* 4 Demo Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Agent demos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <button
+            onClick={() => runScenario(0)}
+            className={`p-4 text-left border-2 border-[#1E1611] transition-all ${
+              activeScenario === 0
+                ? "bg-[#EFEBE1] shadow-[4px_4px_0px_#1E1611]"
+                : "bg-[#FFFFFF] hover:bg-[#F7F4EE] shadow-[2px_2px_0px_#1E1611]"
+            }`}
+          >
+            <div className="w-8 h-8 bg-[#EFEBE1] border-2 border-[#1E1611] flex items-center justify-center text-[#7A543A] mb-3">
+              <Eye className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-black uppercase text-[#7A543A] block mb-1">Agent demo</span>
+            <h3 className="text-sm font-black text-[#1E1611]">Watch ETH</h3>
+            <p className="text-xs text-[#4D382C] mt-1">Four agents monitor live ETH signals and reach consensus</p>
+          </button>
+
+          <button
+            onClick={() => runScenario(5)}
+            className={`p-4 text-left border-2 border-[#1E1611] transition-all ${
+              activeScenario === 5
+                ? "bg-[#EFEBE1] shadow-[4px_4px_0px_#1E1611]"
+                : "bg-[#FFFFFF] hover:bg-[#F7F4EE] shadow-[2px_2px_0px_#1E1611]"
+            }`}
+          >
+            <div className="w-8 h-8 bg-[#EFEBE1] border-2 border-[#1E1611] flex items-center justify-center text-[#7A543A] mb-3">
+              <Activity className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-black uppercase text-[#7A543A] block mb-1">Agent demo</span>
+            <h3 className="text-sm font-black text-[#1E1611]">Trade ETH</h3>
+            <p className="text-xs text-[#4D382C] mt-1">Consensus, RiskGuardian, and a safe paper order preview</p>
+          </button>
+
           <button
             onClick={() => runScenario(1)}
             className={`p-4 text-left border-2 border-[#1E1611] transition-all ${
@@ -168,7 +202,7 @@ export default function DemoPlaygroundPage() {
                     AF
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#1E1611]">AgentFi Bot</h4>
+                    <h4 className="text-xs font-black text-[#1E1611]">Gotrade Bot</h4>
                     <span className="text-[10px] font-bold text-[#4A6B53]">Verified Phone Account</span>
                   </div>
                 </div>

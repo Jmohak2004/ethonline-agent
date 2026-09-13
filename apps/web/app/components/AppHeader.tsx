@@ -36,7 +36,7 @@ export default function AppHeader({ badge, backHref, backLabel }: AppHeaderProps
             <div className="w-8 h-8 rounded-lg bg-[#1E1611] flex items-center justify-center border-2 border-[#1E1611] shadow-[2px_2px_0px_#7A543A] group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition">
               <Cpu size={15} className="text-[#F7F4EE]" />
             </div>
-            <span className="font-extrabold text-lg tracking-tight text-[#1E1611]">AgentFi</span>
+            <span className="font-extrabold text-lg tracking-tight text-[#1E1611]">GoTrade</span>
           </Link>
 
           {backHref && (
