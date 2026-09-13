@@ -1,8 +1,4 @@
-"""
-AgentFi — Unified WhatsApp Messaging Service
-Supports both Twilio WhatsApp API (recommended for rapid sandbox testing)
-and Meta WhatsApp Cloud API, with local mock fallback for development.
-"""
+"""AgentFi unified WhatsApp messaging service."""
 import httpx
 import structlog
 import base64
@@ -16,7 +12,7 @@ WHATSAPP_API_BASE = f"https://graph.facebook.com/{settings.WHATSAPP_API_VERSION}
 
 async def send_whatsapp_message(to: str, body: str) -> bool:
     """
-    Send a WhatsApp message using the configured provider (Twilio, Meta, or Mock).
+    Send a WhatsApp message using the configured provider.
     """
     provider = settings.WHATSAPP_PROVIDER.lower()
 
@@ -28,26 +24,13 @@ async def send_whatsapp_message(to: str, body: str) -> bool:
     elif provider == "meta":
         return await _send_via_meta(to, body)
 
-    # Provider 3: Mock / Local Logging
-    else:
-        logger.info(
-            "WhatsApp [Mock] — Message Delivered",
-            provider="mock",
-            to=to[-4:] if len(to) >= 4 else to,
-            body=body[:120],
-        )
-        return True
+    raise ValueError(f"Unsupported WhatsApp provider: {provider}")
 
 
 async def _send_via_twilio(to: str, body: str) -> bool:
     """Send WhatsApp message using Twilio REST API."""
     if not settings.TWILIO_ACCOUNT_SID or not settings.TWILIO_AUTH_TOKEN:
-        logger.info(
-            "Twilio WhatsApp [Dev Mock] — Credentials not set, logging message",
-            to=to[-4:] if len(to) >= 4 else to,
-            preview=body[:100],
-        )
-        return True
+        raise RuntimeError("Twilio WhatsApp credentials are required")
 
     # Normalize phone numbers for Twilio WhatsApp format (whatsapp:+1234567890)
     to_formatted = to if to.startswith("whatsapp:") else f"whatsapp:{to if to.startswith('+') else '+' + to}"
@@ -88,12 +71,7 @@ async def _send_via_twilio(to: str, body: str) -> bool:
 async def _send_via_meta(to: str, body: str) -> bool:
     """Send WhatsApp message using Meta WhatsApp Cloud API."""
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_NUMBER_ID:
-        logger.info(
-            "Meta WhatsApp [Dev Mock] — Credentials not set, logging message",
-            to=to[-4:] if len(to) >= 4 else to,
-            preview=body[:100],
-        )
-        return True
+        raise RuntimeError("Meta WhatsApp credentials are required")
 
     # Normalize to E.164 digits without "+" or "whatsapp:" for Meta
     clean_to = to.replace("whatsapp:", "").replace("+", "").strip()
@@ -131,8 +109,7 @@ async def send_whatsapp_template(to: str, template_name: str, language: str = "e
         return await send_whatsapp_message(to, f"[{template_name.upper()}] notification from AgentFi")
 
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_NUMBER_ID:
-        logger.info("WhatsApp mock — template message", to=to[-4:] if len(to) >= 4 else to, template=template_name)
-        return True
+        raise RuntimeError("Meta WhatsApp credentials are required")
 
     clean_to = to.replace("whatsapp:", "").replace("+", "").strip()
     url = f"{WHATSAPP_API_BASE}/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"

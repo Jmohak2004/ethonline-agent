@@ -62,24 +62,7 @@ class ENSAgentIdentityService:
         if clean_name in VERIFIED_ENS_AGENTS:
             return VERIFIED_ENS_AGENTS[clean_name]
         
-        # Generic fallback resolver
-        return {
-            "name": clean_name.split(".")[0].capitalize(),
-            "ens_name": clean_name,
-            "developer": "0xUnknownDeveloper",
-            "version": "1.0.0",
-            "pricing": "FREE",
-            "capabilities": ["GENERAL_ANALYSIS"],
-            "reputation_score": 75
-        }
+        return None
 
     async def register_agent_subname(self, agent_slug: str, developer_address: str, manifest_hash: str) -> str:
-        """Simulate claiming or binding a .agentfi.eth subname for an agent."""
-        ens_name = f"{agent_slug.lower()}.agentfi.eth"
-        logger.info(
-            "Registered ENS Agent subname",
-            ens_name=ens_name,
-            developer=developer_address,
-            manifest=manifest_hash
-        )
-        return ens_name
+        raise RuntimeError("ENS registration requires a configured signer and ENS contract")

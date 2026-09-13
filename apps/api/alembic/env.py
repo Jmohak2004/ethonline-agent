@@ -13,12 +13,10 @@ import os
 # Add the API directory to sys.path so models can be imported
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from config import settings
 from database import Base
 import models  # noqa — ensures all models are loaded into Base.metadata
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

@@ -97,7 +97,7 @@ async def parse_with_llm(text: str) -> Tuple[Intent, Dict[str, Any]]:
     User Message: "{text}"
     """
     
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel(os.getenv("LLM_MODEL", "gemini-2.0-flash"))
     res = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
     
     try:

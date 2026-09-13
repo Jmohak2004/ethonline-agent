@@ -1,3 +1,5 @@
+import "./env";
+import { Mastra } from "@mastra/core";
 import { YieldFarmerAgent } from "./agents/YieldFarmerAgent";
 import { NFTAppraiserAgent } from "./agents/NFTAppraiserAgent";
 import { GovernanceVoterAgent } from "./agents/GovernanceVoterAgent";
@@ -16,14 +18,18 @@ export const agents = {
   BettingAgent,
 };
 
+export const mastra = new Mastra({
+  agents,
+});
+
 // Example usage function to test an agent
 async function testAgent() {
   console.log("Testing SwapAgent...");
   try {
     const response = await SwapAgent.generate("Swap 5 USDC to ETH on Base");
     console.log("Response:", response.text);
-  } catch (err) {
-    console.error("Error executing agent:", err);
+  } catch (err: any) {
+    console.error("Error executing agent:", err?.message || err);
   }
 }
 

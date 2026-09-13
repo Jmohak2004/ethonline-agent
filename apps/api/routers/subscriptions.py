@@ -68,7 +68,7 @@ async def create_subscription(
         plan_name="Monthly Tier"
     )
 
-    # 4. Save subscription in PostgreSQL
+    # 4. Save subscription in MongoDB
     now = datetime.now(timezone.utc)
     sub = AgentSubscription(
         user_id=current_user.id,

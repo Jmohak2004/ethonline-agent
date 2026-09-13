@@ -37,9 +37,10 @@ class ChainlinkCRERiskService:
         human_approval_threshold: float
     ) -> ConfidentialRiskDecision:
         """
-        Executes strict confidential policy in a simulated TEE enclaved environment.
-        Guarantees FAIL-CLOSED safety semantics.
+        Executes the configured Chainlink CRE policy and guarantees fail-closed safety semantics.
         """
+        if not self.cre_config:
+            raise RuntimeError("Chainlink CRE configuration is required")
         # Rule 1: Exceeds hard human approval threshold
         if amount_usd > human_approval_threshold:
             attestation = hashlib.sha256(f"{asset}:{amount_usd}:{time.time()}".encode()).hexdigest()

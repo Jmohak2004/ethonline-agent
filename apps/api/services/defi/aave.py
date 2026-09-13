@@ -73,8 +73,8 @@ class AaveService:
             self.w3 = None
 
     async def get_current_apy(self) -> float:
-        """Fetch current Aave v3 USDC Supply APY. (Mocked at 5.24% for UI display)"""
-        return 5.24
+        """Fetch current Aave v3 USDC Supply APY from a live reserve data source."""
+        raise RuntimeError("Aave APY data source is not configured")
 
     async def supply_usdc(self, wallet_address: str, amount: float, encrypted_key: str = None) -> Dict[str, Any]:
         """

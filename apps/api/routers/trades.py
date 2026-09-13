@@ -92,7 +92,7 @@ async def request_trade(
     """
     Request trade execution through the security policy engine.
     - Evaluates via Chainlink CRE TEE enclaved rules
-    - If within limits: Auto-executes via Uniswap v3 & updates PostgreSQL
+    - If within limits: Auto-executes via Uniswap v3 & updates MongoDB
     - If over threshold: Issues Ledger hardware clear-signing challenge
     """
     # 1. Fetch risk profile

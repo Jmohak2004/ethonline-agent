@@ -31,7 +31,7 @@ class GraphIntelligenceService:
             self.headers["Authorization"] = f"Bearer {api_key}"
 
     async def execute_query(self, endpoint: str, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Execute GraphQL query against The Graph node with fallback to mock intelligence for testnets."""
+        """Execute a GraphQL query against The Graph and fail if unavailable."""
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
@@ -44,66 +44,13 @@ class GraphIntelligenceService:
                     if "data" in data and data["data"]:
                         return data["data"]
         except Exception as e:
-            logger.warning("Graph query failed, falling back to deterministic onchain simulator", error=str(e), endpoint=endpoint)
-        
-        return self._get_simulated_graph_data(query, variables)
-
-    def _get_simulated_graph_data(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Deterministic onchain mock for offline/testnet demo scenarios."""
-        return {
-            "tokenDayDatas": [
-                {"date": 1715000000, "volumeUSD": "184500000.00", "tvlUSD": "3450000000.00"}
-            ],
-            "swaps": [
-                {"id": "0x123", "amountUSD": "450000.00", "sender": "0xWhale1", "recipient": "0xPool"}
-            ]
-        }
+            logger.error("Graph query failed", error=str(e), endpoint=endpoint)
+            raise RuntimeError("The Graph is unavailable") from e
 
     async def get_token_activity(self, token_symbol: str) -> TokenOnchainMetrics:
-        """Comprehensive onchain analysis combining volume, liquidity, and whale flows."""
-        symbol = token_symbol.upper()
-        
-        # In real or simulated mode, calculate live indicators
-        if symbol == "ETH":
-            return TokenOnchainMetrics(
-                token="ETH",
-                total_volume_usd=482_300_000.0,
-                liquidity_usd=2_150_000_000.0,
-                whale_activity_status="ACCUMULATION",
-                large_transfers_count_24h=42,
-                net_inflow_usd_24h=18_400_000.0,
-                evidence=[
-                    "3 wallets holding >10k ETH accumulated $18.4M in past 24h",
-                    "Uniswap v3 WETH/USDC TVL increased by 3.2%",
-                    "Exchange outflow / reserve ratio declined (low selling pressure)"
-                ]
-            )
-        elif symbol == "BTC" or symbol == "WBTC":
-            return TokenOnchainMetrics(
-                token="WBTC",
-                total_volume_usd=620_000_000.0,
-                liquidity_usd=1_850_000_000.0,
-                whale_activity_status="NEUTRAL",
-                large_transfers_count_24h=29,
-                net_inflow_usd_24h=2_100_000.0,
-                evidence=[
-                    "Whale flow balanced between exchange deposits and cold wallet storage",
-                    "DEX depth stable across $60k-$68k ranges"
-                ]
-            )
-        else:
-            return TokenOnchainMetrics(
-                token=symbol,
-                total_volume_usd=15_000_000.0,
-                liquidity_usd=45_000_000.0,
-                whale_activity_status="ACCUMULATION",
-                large_transfers_count_24h=8,
-                net_inflow_usd_24h=850_000.0,
-                evidence=[
-                    f"Growing decentralized liquidity for {symbol}",
-                    "Smart money address inflow detected on Sepolia/Base"
-                ]
-            )
+        raise RuntimeError(
+            "Token activity requires a live subgraph query; no synthetic metrics are available"
+        )
 
     async def get_whale_activity(self, token: str) -> Dict[str, Any]:
         metrics = await self.get_token_activity(token)

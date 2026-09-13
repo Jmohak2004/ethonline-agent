@@ -161,6 +161,11 @@ async def route_message(from_number: str, text: str, message_id: str = "") -> st
 
     except Exception as e:
         logger.error("Message routing error", error=str(e))
+        if "CDP_WALLET_SECRET" in str(e):
+            return (
+                "⚠️ Wallet setup is incomplete. The administrator must configure "
+                "CDP_WALLET_SECRET before I can create or read your wallet."
+            )
         err_msg = "⚠️ Something went wrong processing your request. Please try again in a moment."
         return err_msg
 
@@ -215,7 +220,6 @@ async def handle_balance(from_number: str) -> str:
     liquid_usdc = max(0.0, usdc_val - supplied_aave)
     
     total_val = round(usdc_val + eth_val + earned_aave, 2)
-    current_apy = await aave_service.get_current_apy()
 
     faucet_msg = (
         f"\n🚰 *Need testnet funds?* Copy your wallet address above and paste into the Sepolia faucet:\n"
@@ -226,6 +230,7 @@ async def handle_balance(from_number: str) -> str:
 
     aave_display = ""
     if supplied_aave > 0:
+        current_apy = await aave_service.get_current_apy()
         aave_display = (
             f"• *Aave v3 Yield (Auto-Supplied):* ${supplied_aave:.2f} (Earning {current_apy}% APY)\n"
             f"  ↳ _Unrealized Yield:_ +${earned_aave:.4f} USDC\n"

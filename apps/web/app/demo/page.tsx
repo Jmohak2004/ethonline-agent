@@ -26,7 +26,8 @@ export default function DemoPlaygroundPage() {
       else if (scenarioNumber === 3) endpoint = "/api/demo/scenario-3-hedera-x402-payment";
       else if (scenarioNumber === 4) endpoint = "/api/demo/scenario-4-ledger-high-risk-approval";
 
-      const res = await fetch(`http://localhost:8000/demo${endpoint.replace("/api/demo", "")}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/demo${endpoint.replace("/api/demo", "")}`, {
         method: "POST"
       });
       if (res.ok) {
@@ -35,74 +36,10 @@ export default function DemoPlaygroundPage() {
       } else {
         throw new Error("Backend offline");
       }
-    } catch (e) {
-      if (scenarioNumber === 1) {
-        setResult({
-          scenario: "Alpha Opportunity & Execution",
-          asset: "ETH",
-          amount_usd: 20.0,
-          agent_analysis: {
-            composite_score: 0.78,
-            recommendation: "POTENTIAL_OPPORTUNITY",
-            risk_level: "MEDIUM",
-            explainability: {
-              what_happened: "Synchronized accumulation and positive momentum in ETH detected.",
-              agents_agreeing: ["NewsScout", "MarketMind", "WhaleWatcher Pro", "SentimentAgent"],
-              risk_guardian_decision: "APPROVED"
-            }
-          },
-          execution: {
-            mode: "PAPER",
-            tx_hash: "0xuni_7c92b41f018d4529a3",
-            amount_in: 20.0,
-            amount_out: 0.00754,
-            token_in: "USDC",
-            token_out: "ETH"
-          },
-          whatsapp_preview: "✅ Trade Completed\n\n• Asset: ETH\n• Amount: $20.00 USDC\n• Received: 0.00754 ETH\n• Confidence: 78%\n• Risk Level: MEDIUM\n• Tx Hash: 0xuni_7c92b41...\n\nExecuted within your $20 autonomous limit."
-        });
-      } else if (scenarioNumber === 2) {
-        setResult({
-          scenario: "Marketplace Subscription & USDC Split",
-          settlement: {
-            amount_usdc: 3.0,
-            developer_payout_usdc: 2.925,
-            platform_fee_usdc: 0.075,
-            settlement_network: "Arc Testnet / Ethereum Sepolia",
-            status: "CONFIRMED"
-          },
-          whatsapp_preview: "💳 Subscription Activated\n\n• Agent: WhaleWatcher Pro (whalewatcher.agentfi.eth)\n• Cost: $3.00 USDC/mo\n• Settlement: Arc / USDC\n• Developer Payout: $2.93 USDC (97.5%)\n• Protocol Fee: $0.08 USDC (2.5%)\n\nTrading swarm is now live."
-        });
-      } else if (scenarioNumber === 3) {
-        setResult({
-          scenario: "Hedera x402 Autonomous Agent-to-Agent Payment",
-          inter_agent_flow: {
-            requester: "TradingOrchestratorAgent",
-            provider: "WhaleWatcher Pro (whalewatcher.agentfi.eth)",
-            protocol: "Hedera x402 + HCS Topic 0.0.5182901",
-            cost_usd: 0.02,
-            cost_hbar: 0.25,
-            status: "SETTLED_AUTONOMOUSLY"
-          },
-          whatsapp_preview: "⚡ Hedera x402 Settled\n\n• Requester: TradingOrchestrator\n• Provider: WhaleWatcher Pro\n• Micropayment: 0.25 HBAR ($0.02)\n• Topic: 0.0.5182901\n• Status: Autonomous Settlement Complete"
-        });
-      } else if (scenarioNumber === 4) {
-        setResult({
-          scenario: "High-Risk Approval & Ledger Clear-Signing",
-          requested_amount_usd: 100.0,
-          cre_risk_evaluation: {
-            decision: "HUMAN_APPROVAL_REQUIRED",
-            risk_score: 75,
-            tee_attestation_hash: "0xcre_8f912c4019a823b192e",
-            reason: "Trade amount ($100.00) exceeds autonomous limit ($20.00)."
-          },
-          ledger_challenge: {
-            request_id: "ledger_req_49a1bc820",
-            status: "PENDING_APPROVAL"
-          },
-          whatsapp_preview: "🚨 High-Risk Action Requires Approval\n\nA trade of $100.00 USDC into ETH was requested.\nExceeds automatic limit of $20.00.\n\n• Risk Score: 75/100\n• TEE Attestation: 0xcre_8f912c4...\n• Challenge ID: ledger_req_49a1bc820\n\nReply APPROVE bc82 or tap your Ledger device to authorize."
-        });
-      }
+    } catch (error) {
+      setResult({
+        error: error instanceof Error ? error.message : "Live scenario execution failed",
+      });
     } finally {
       setLoading(false);
     }
@@ -215,7 +152,7 @@ export default function DemoPlaygroundPage() {
                   <Terminal className="w-4 h-4 text-[#7A543A]" /> Attestation Trace
                 </span>
                 <span className="px-2 py-0.5 bg-[#EFEBE1] border border-[#1E1611] text-[#1E1611] font-bold text-[10px]">
-                  HTTP 200 OK
+                  {result.error ? "LIVE ERROR" : "LIVE RESPONSE"}
                 </span>
               </div>
               <pre className="bg-[#F7F4EE] p-3 border-2 border-[#1E1611] text-[#1E1611] overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-[360px]">

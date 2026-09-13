@@ -114,7 +114,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto pt-6 border-t border-[#DCD4C4] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#857467]">
         <div>
-          Paper trading &amp; testnet simulation. AI predictions are probabilistic. All trades bound to limits.
+          Live testnet execution. AI predictions are probabilistic. All trades bound to limits.
         </div>
         <div>
           © 2026 AgentFi. Built for ETHOnline 2026.

@@ -1,7 +1,4 @@
-"""
-AgentFi — SQLAlchemy ORM Models
-All 23 database tables defined here.
-"""
+"""AgentFi domain models retained for schema and typing compatibility."""
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -10,10 +7,11 @@ from enum import Enum as PyEnum
 
 from sqlalchemy import (
     String, Text, Boolean, Integer, Float, Numeric, DateTime, JSON,
-    ForeignKey, Index, UniqueConstraint, Enum, func
+    ForeignKey, Index, UniqueConstraint, Enum, Uuid, func
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+UUID = Uuid
 
 from database import Base
 
@@ -121,7 +119,7 @@ class User(Base):
         Index("ix_users_role", "role"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     whatsapp_number: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(String(100))
     email: Mapped[Optional[str]] = mapped_column(String(255))

@@ -1,75 +1,56 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import {
-  Activity, ArrowLeft, Bot, CheckCircle, ExternalLink,
-  Shield, Zap, Filter, ArrowUpRight, Lock, Clock
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Activity, Clock } from "lucide-react";
 import AppHeader from "@/app/components/AppHeader";
 import UniversalFooter from "@/app/components/Footer";
 
-const INITIAL_ACTIVITIES = [
-  {
-    id: "act-1",
-    type: "SWAP_EXECUTED",
-    title: "Uniswap v3 Swap Executed",
-    description: "Swapped $20.00 USDC -> 0.00754 ETH on Ethereum Sepolia Testnet",
-    agent: "ExecutionAgent",
-    status: "CONFIRMED",
-    time: "2m ago",
-    txHash: "0xuni_7c92b41f018d4529a3",
-    tag: "DeFi Execution"
-  },
-  {
-    id: "act-2",
-    type: "RISK_APPROVED",
-    title: "Chainlink CRE TEE Risk Evaluation",
-    description: "Evaluated $20 trade against $100 portfolio. Attestation verified.",
-    agent: "RiskGuardian",
-    status: "APPROVED",
-    time: "4m ago",
-    tag: "Security Guardrail"
-  },
-  {
-    id: "act-3",
-    type: "HEDERA_X402",
-    title: "Hedera x402 Micropayment Settled",
-    description: "Paid 0.25 HBAR ($0.02) to WhaleWatcher Pro via HCS Topic 0.0.5182901",
-    agent: "WhaleWatcher Pro",
-    status: "SETTLED",
-    time: "6m ago",
-    txHash: "0.0.1715000@x402_whalesvc",
-    tag: "Agent-to-Agent"
-  },
-  {
-    id: "act-4",
-    type: "SIGNAL_GENERATED",
-    title: "The Graph Whale Inflow Detected",
-    description: "3 wallets accumulated $18.4M in ETH in 24h. Confidence: 81%",
-    agent: "WhaleWatcher Pro",
-    status: "BROADCASTED",
-    time: "8m ago",
-    tag: "The Graph"
-  },
-  {
-    id: "act-5",
-    type: "LEDGER_CLEAR_SIGN",
-    title: "Ledger Clear-Signing Challenge",
-    description: "Challenge created for $100 trade exceeding $20 autonomous limit",
-    agent: "LedgerSecurity",
-    status: "PENDING",
-    time: "15m ago",
-    tag: "Hardware Clear-Signing"
-  }
-];
+type FeedEvent = {
+  type: string;
+  msg: string;
+  time: string;
+  timestamp: number;
+  eas?: unknown;
+};
+
+type ActivityItem = {
+  id: string;
+  title: string;
+  description: string;
+  agent: string;
+  status: string;
+  time: string;
+  tag: string;
+  txHash?: string;
+};
 
 export default function ActivityPage() {
   const [filter, setFilter] = useState("ALL");
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    fetch(`${apiUrl}/api/feed`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Live activity feed unavailable");
+        return response.json();
+      })
+      .then((data: { events?: FeedEvent[] }) => setActivities((data.events || []).map((event, index) => ({
+        id: `${event.timestamp}-${index}`,
+        title: event.type === "buy" ? "On-chain buy signal" : event.type === "sell" ? "On-chain sell signal" : "Agent activity",
+        description: event.msg,
+        agent: event.eas ? "EAS-attested signal" : "AgentFi",
+        status: event.eas ? "ATTESTED" : "RECORDED",
+        time: new Date(event.time).toLocaleString(),
+        tag: event.eas ? "EAS" : "Audit Trail",
+      }))))
+      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Live activity feed unavailable"));
+  }, []);
 
   const filtered = filter === "ALL"
-    ? INITIAL_ACTIVITIES
-    : INITIAL_ACTIVITIES.filter(a => a.tag.toLowerCase().includes(filter.toLowerCase()));
+    ? activities
+    : activities.filter(a => (a.tag || "").toLowerCase().includes(filter.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-[#F7F4EE] text-[#1E1611] flex flex-col justify-between">
@@ -93,7 +74,7 @@ export default function ActivityPage() {
             Activity & Execution Stream
           </h1>
           <p className="mt-1 text-sm text-[#4D382C]">
-            Deterministic log of multi-agent signals, Hedera x402 payments, and Uniswap trades.
+            Live log of multi-agent signals, attestations, and on-chain trades.
           </p>
         </div>
 
@@ -115,6 +96,7 @@ export default function ActivityPage() {
         </div>
 
         {/* Activity Stream */}
+        {error && <p className="text-sm text-[#873322]">{error}</p>}
         <div className="space-y-3">
           {filtered.map((item) => (
             <div

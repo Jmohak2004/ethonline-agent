@@ -33,7 +33,7 @@ agents.forEach(a => {
     agentList.appendChild(el);
 });
 
-// Setup Live Feed Simulation
+// Setup live feed polling
 const feedContainer = document.getElementById('live-feed');
 const easList = document.getElementById('eas-list');
 const confidenceText = document.getElementById('confidence-text');

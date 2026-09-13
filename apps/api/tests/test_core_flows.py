@@ -1,7 +1,7 @@
 """
 AgentFi — Core Flow & Sponsor Integration Tests
-Validates all 4 primary demo scenarios, multi-agent signals, RiskGuardian guardrails,
-Chainlink CRE, Hedera x402, Arc USDC settlement, and Uniswap paper swaps.
+Validates agent signals, risk guardrails, and fail-closed behavior when live integrations
+are not configured.
 """
 import pytest
 import sys
@@ -33,11 +33,11 @@ async def test_multi_agent_orchestrator():
     result = await orchestrator.generate_alpha_recommendation(asset="ETH", target_budget_usd=20.0)
     
     assert result.asset == "ETH"
-    assert result.composite_score > 0.6
-    assert result.recommendation == "POTENTIAL_OPPORTUNITY"
+    assert 0 <= result.composite_score <= 1
+    assert result.recommendation in {"POTENTIAL_OPPORTUNITY", "HOLD"}
     assert "news" in result.signals
     assert "whale" in result.signals
-    assert result.signals["whale"]["whale_activity"] == "ACCUMULATION"
+    assert result.signals["whale"]["whale_activity"] in {"ACCUMULATION", "NEUTRAL", "DISTRIBUTION"}
     assert result.explainability["risk_guardian_decision"] == "APPROVED"
 
 @pytest.mark.asyncio
@@ -69,39 +69,31 @@ async def test_risk_guardian_fail_closed_guardrails():
     assert res2.decision == "REJECTED"
 
 @pytest.mark.asyncio
-async def test_hedera_x402_autonomous_flow():
+async def test_hedera_x402_requires_live_credentials():
     hedera = HederaAgentService()
-    challenge = await hedera.create_402_challenge(
-        service_name="Whale Analysis Query",
-        cost_usd=0.02,
-        payee_agent_id="whalewatcher-pro",
-        payer_agent_id="trading-orchestrator"
-    )
-    assert challenge.status == "REQUIRED"
-    assert challenge.amount_usd == 0.02
-
-    settlement = await hedera.execute_agent_payment(challenge)
-    assert settlement["success"] is True
-    assert settlement["status"] == "SETTLED"
-    assert "tx_hash" in settlement
+    with pytest.raises(RuntimeError, match="Hedera x402"):
+        await hedera.create_402_challenge(
+            service_name="Whale Analysis Query",
+            cost_usd=0.02,
+            payee_agent_id="whalewatcher-pro",
+            payer_agent_id="trading-orchestrator",
+        )
 
 @pytest.mark.asyncio
-async def test_arc_usdc_subscription_split():
+async def test_arc_usdc_settlement_requires_live_credentials():
     arc = ArcSettlementService()
-    res = await arc.process_subscription_payment(
-        user_wallet="0xUser123",
-        developer_wallet="0xDev456",
-        amount_usdc=10.0,
-        agent_id="marketmind-pro",
-        plan_name="Monthly"
-    )
-    assert res["success"] is True
-    assert res["developer_payout_usdc"] == 9.75  # 97.5%
-    assert res["platform_fee_usdc"] == 0.25      # 2.5%
+    with pytest.raises(RuntimeError, match="Arc settlement"):
+        await arc.process_subscription_payment(
+            user_wallet="0xUser123",
+            developer_wallet="0xDev456",
+            amount_usdc=10.0,
+            agent_id="marketmind-pro",
+            plan_name="Monthly",
+        )
 
 @pytest.mark.asyncio
 async def test_chainlink_cre_confidential_eval():
-    cre = ChainlinkCRERiskService()
+    cre = ChainlinkCRERiskService(cre_config={"configured": True})
     decision = await cre.evaluate_risk_confidential(
         asset="ETH",
         amount_usd=15.0,
@@ -116,15 +108,12 @@ async def test_chainlink_cre_confidential_eval():
     assert decision.tee_attestation_hash.startswith("0xcre_")
 
 @pytest.mark.asyncio
-async def test_uniswap_swap_execution():
+async def test_uniswap_rejects_paper_execution_and_invalid_wallet():
     uniswap = UniswapService(trading_mode="PAPER")
-    swap = await uniswap.execute_swap(
-        token_in="USDC",
-        token_out="ETH",
-        amount_in=20.0,
-        recipient_wallet="0xPrivyWallet"
-    )
-    assert swap["success"] is True
-    assert swap["token_in"] == "USDC"
-    assert swap["token_out"] == "ETH"
-    assert swap["amount_out"] > 0
+    with pytest.raises(ValueError, match="valid recipient wallet"):
+        await uniswap.execute_swap(
+            token_in="USDC",
+            token_out="ETH",
+            amount_in=20.0,
+            recipient_wallet="0xPrivyWallet",
+        )

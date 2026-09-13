@@ -6,7 +6,6 @@ and real signed transaction broadcasting.
 """
 from typing import Dict, Any, Optional
 import structlog
-import uuid
 import time
 import os
 from dataclasses import dataclass
@@ -163,13 +162,8 @@ class UniswapService:
             amount_out_units = result[0]
             estimated_amount_out = amount_out_units / (10 ** decimals_out)
         except Exception as e:
-            logger.error("Quoter failed, falling back to spot mock", error=str(e))
-            # Fallback to the old logic if pool is empty or quoter fails
-            price_in = await market_feed.get_spot_price(token_in)
-            price_out = await market_feed.get_spot_price(token_out)
-            if price_out <= 0: price_out = 2480.0
-            usd_value = amount_in * price_in
-            estimated_amount_out = usd_value / price_out
+            logger.error("Live Uniswap quote failed", error=str(e))
+            raise RuntimeError("Unable to obtain a live Uniswap quote") from e
 
         # For execution_price and price_impact, we can compare on-chain out vs spot out
         price_in = await market_feed.get_spot_price(token_in)
@@ -235,20 +229,18 @@ class UniswapService:
         - Checks live onchain wallet balance.
         - If LIVE mode and insufficient funds: returns actionable deposit instructions.
         - If LIVE mode and sufficient funds: broadcasts signed onchain transaction.
-        - If PAPER mode: returns simulated paper execution with live pricing.
+        - Paper execution is intentionally disabled.
         """
+        if not recipient_wallet or not Web3.is_address(recipient_wallet):
+            raise ValueError("A valid recipient wallet address is required")
+        valid_recipient = Web3.to_checksum_address(recipient_wallet)
+
         quote = await self.get_swap_quote(token_in, token_out, amount_in)
 
         if quote.price_impact_percent > max_slippage_percent:
             raise ValueError(
                 f"Price impact too high: {quote.price_impact_percent}% > max {max_slippage_percent}%"
             )
-
-        valid_recipient = (
-            recipient_wallet
-            if (recipient_wallet and recipient_wallet.startswith("0x") and len(recipient_wallet) == 42)
-            else "0x82A41b0000000000000000000000000000000000"
-        )
 
         # Pre-flight balance check on chain
         balances = await vault_service.get_onchain_balances(valid_recipient, network=self.network)
@@ -274,7 +266,7 @@ class UniswapService:
         )
 
         # Mode A: LIVE Real-Money Execution
-        if self.trading_mode == "LIVE":
+        if self.trading_mode in {"LIVE", "TESTNET"}:
             if available_balance < amount_in:
                 net_name = NETWORKS.get(self.network, NETWORKS["sepolia"])["name"]
                 faucet_note = ""
@@ -344,36 +336,6 @@ class UniswapService:
                     logger.error("Failed broadcasting live transaction via CDP", error=str(e))
                     raise RuntimeError(f"Live onchain swap execution failed: {str(e)}")
 
-        # Mode B: Paper Trading / Simulation (Live Spot Rates, Simulated Broadcast)
-        tx_hash = f"0xuni_{uuid.uuid4().hex}"
-        explorer_url = f"{self.explorer}/tx/{tx_hash}"
-
-        logger.info(
-            "Uniswap v3 trade recorded",
-            mode=self.trading_mode,
-            network=self.network,
-            in_asset=token_in,
-            out_asset=token_out,
-            amount_in=amount_in,
-            amount_out=quote.estimated_amount_out,
-            tx_hash=tx_hash,
+        raise RuntimeError(
+            "Paper trading is disabled; set TRADING_MODE to TESTNET or LIVE and configure a signer"
         )
-
-        return {
-            "success": True,
-            "mode": self.trading_mode,
-            "network": self.network,
-            "router_address": self.router_address,
-            "tx_hash": tx_hash,
-            "token_in": quote.token_in,
-            "token_out": quote.token_out,
-            "amount_in": quote.amount_in,
-            "amount_out": quote.estimated_amount_out,
-            "execution_price": quote.execution_price,
-            "route": quote.route,
-            "recipient": valid_recipient,
-            "calldata": calldata[:40] + "...",
-            "explorer_url": explorer_url,
-            "available_balance": available_balance,
-            "timestamp": time.time(),
-        }

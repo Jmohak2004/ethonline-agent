@@ -1,13 +1,11 @@
 """
 AgentFi — Health Router
 """
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
+from fastapi import APIRouter
 import redis.asyncio as aioredis
 import structlog
 
-from database import get_db
+from database import mongo_database
 from config import settings
 
 logger = structlog.get_logger()
@@ -15,8 +13,8 @@ router = APIRouter()
 
 
 @router.get("/")
-async def health_check(db: AsyncSession = Depends(get_db)):
-    """Health check endpoint — verifies DB and Redis connectivity."""
+async def health_check():
+    """Health check endpoint — verifies MongoDB and Redis connectivity."""
     health = {
         "status": "ok",
         "app": "AgentFi API",
@@ -26,12 +24,12 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "services": {},
     }
 
-    # Check PostgreSQL
+    # Check MongoDB
     try:
-        await db.execute(text("SELECT 1"))
-        health["services"]["postgres"] = "ok"
+        await mongo_database.command("ping")
+        health["services"]["mongodb"] = "ok"
     except Exception as e:
-        health["services"]["postgres"] = f"error: {str(e)}"
+        health["services"]["mongodb"] = f"error: {str(e)}"
         health["status"] = "degraded"
 
     # Check Redis

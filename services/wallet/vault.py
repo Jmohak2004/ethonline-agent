@@ -12,6 +12,7 @@ from eth_account import Account
 from web3 import Web3
 from cdp import CdpClient
 from cdp.evm_server_account import EvmServerAccount
+from config import settings
 
 logger = structlog.get_logger()
 
@@ -85,13 +86,28 @@ class WalletVaultService:
     def _get_cdp_client(self) -> CdpClient:
         if not self.cdp_api_key_name or not self.cdp_api_key_private_key:
             raise ValueError("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set to use MPC wallets.")
-        return CdpClient(api_key_id=self.cdp_api_key_name, api_key_secret=self.cdp_api_key_private_key)
+        if not settings.CDP_WALLET_SECRET:
+            raise ValueError("CDP_WALLET_SECRET must be set to create or access CDP wallets.")
+        return CdpClient(
+            api_key_id=self.cdp_api_key_name,
+            api_key_secret=self.cdp_api_key_private_key,
+            wallet_secret=settings.CDP_WALLET_SECRET,
+        )
 
     async def create_wallet(self, network: str = "base-sepolia") -> Tuple[str, str]:
         """Generates a new CDP MPC wallet and returns (address, mpc_identifier)."""
+        existing_address = os.getenv("EXISTING_WALLET_ADDRESS", "").strip()
+        if existing_address:
+            try:
+                address = Web3.to_checksum_address(existing_address)
+            except ValueError as exc:
+                raise ValueError("EXISTING_WALLET_ADDRESS must be a valid EVM address") from exc
+            logger.info("Using configured existing wallet", address=address, network=network)
+            return address, "EXTERNAL_WALLET"
+
         logger.info("Generating CDP MPC Wallet...", network=network)
         async with self._get_cdp_client() as client:
-            account = await client.evm.create_account(network_id=network)
+            account = await client.evm.create_account()
             address = account.address.address_id
             logger.info("Generated new CDP MPC wallet", address=address)
             # Store the CDP account name in place of the encrypted private key to load it later

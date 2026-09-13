@@ -13,12 +13,11 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "web": "turbo dev --filter=web",
-    "api": "cd apps/api && uvicorn main:app --reload --port 8000",
-    "whatsapp": "cd apps/whatsapp && uvicorn main:app --reload --port 8001",
+    "api": "cd apps/api && ../../.venv/bin/uvicorn main:app --reload --port 8000",
+    "whatsapp": "cd apps/whatsapp && ../../.venv/bin/uvicorn main:app --reload --port 8001",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "db:migrate": "cd apps/api && alembic upgrade head",
-    "db:revision": "cd apps/api && alembic revision --autogenerate"
+    "db:health": "cd apps/api && ../../.venv/bin/python -c \"import asyncio; from database import init_db; asyncio.run(init_db())\""
   },
   "devDependencies": {
     "turbo": "^2.0.0"

@@ -1,6 +1,6 @@
 """
 AgentFi — Database Seed Script
-Populates PostgreSQL with initial production-grade data:
+Populates MongoDB with initial production-grade data:
 - Core verified agents (WhaleWatcher Pro, MarketMind, NewsScout, SentimentAgent, RiskGuardian, ExecutionAgent)
 - Agent Packs (Beginner Safety Pack, Balanced Alpha Pack, Autonomous Research Pack)
 - Seed Demo Users with Privy smart accounts and risk profiles

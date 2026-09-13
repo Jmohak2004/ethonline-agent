@@ -5,17 +5,18 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
+    "dev": "ts-node --transpile-only src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@mastra/core": "^0.1.33",
-    "zod": "^3.23.8",
-    "dotenv": "^16.4.5"
+    "@coinbase/coinbase-sdk": "^0.25.0",
+    "@mastra/core": "^1.64.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5.6.2",
     "@types/node": "^22.5.4",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
   }
 }

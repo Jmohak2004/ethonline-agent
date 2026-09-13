@@ -1,20 +1,15 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: agentfi-postgres
-    environment:
-      POSTGRES_USER: agentfi
-      POSTGRES_PASSWORD: agentfi_dev_password
-      POSTGRES_DB: agentfi
+  mongodb:
+    image: mongo:8
+    container_name: agentfi-mongodb
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./infra/docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mongodb_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agentfi"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -48,7 +43,7 @@ services:
       - dev-tools
 
 volumes:
-  postgres_data:
+  mongodb_data:
   redis_data:
 
 networks:
